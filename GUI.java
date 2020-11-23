@@ -4,6 +4,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -23,6 +24,10 @@ public class GUI extends Application {
 		TextArea key = new TextArea("steinbeck");
 		TextArea output = new TextArea(Vigenere.encrypt(input.getText(), key.getText()));
 		input.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (input.getText().equals("hackerman")) {
+				primaryScene.getStylesheets().add(getClass().getResource("matrix.css").toExternalForm());
+				primaryStage.sizeToScene();
+			}
 			output.setText(Vigenere.encrypt(input.getText(), key.getText()));
 		});
 		key.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -45,11 +50,11 @@ public class GUI extends Application {
 		board.getChildren().forEach(n -> {if (n instanceof TextArea) ((TextArea) n).setWrapText(true);;});
 
 		
-		//primaryStage.setTitle("Encoder/Decoder");
-		primaryStage.initStyle(StageStyle.UNDECORATED);
+		primaryStage.setTitle("Encoder/Decoder");
+		//primaryStage.initStyle(StageStyle.UNDECORATED);
 		primaryScene.getStylesheets().add(getClass().getResource("gui.css").toExternalForm());
-		//primaryStage.sizeToScene();
-		primaryStage.setResizable(false);
+		primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
+		primaryStage.sizeToScene();
 		primaryStage.show();
 		
 		

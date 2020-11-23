@@ -1,0 +1,22 @@
+.text-input {
+	-fx-font-size: 20;
+	-fx-font-family: 'OCR A Extended';
+    -fx-text-fill: lime;
+    -fx-highlight-fill: green;
+    -fx-highlight-text-fill: lime;
+	-fx-control-inner-background: black;
+    -fx-text-box-border: green;
+  	-fx-focus-color: lime;
+  	-fx-background-radius: 0;
+}
+
+.text-input .content {
+	-fx-background-radius: 0;
+}
+
+.scroll-bar:vertical {
+	-fx-pref-width: 1;
+    -fx-opacity: 0;
+}
+
+

@@ -1,12 +1,12 @@
 .text-input {
 	-fx-font-size: 20;
-	-fx-font-family: 'OCR A Extended';
-    -fx-text-fill: lime;
-    -fx-highlight-fill: green;
-    -fx-highlight-text-fill: lime;
-	-fx-control-inner-background: black;
-    -fx-text-box-border: green;
-  	-fx-focus-color: lime;
+	-fx-font-family: 'Georgia';
+    -fx-text-fill: black;
+    -fx-highlight-fill: burlywood;
+    -fx-highlight-text-fill: black;
+	-fx-control-inner-background: cornsilk;
+    -fx-text-box-border: burlywood;
+  	-fx-focus-color: black;
   	-fx-background-radius: 0;
 }
 
