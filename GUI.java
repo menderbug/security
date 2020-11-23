@@ -20,31 +20,44 @@ public class GUI extends Application {
 		primaryStage.setScene(primaryScene);
 		
 
-		TextArea input = new TextArea("it was her habit to build up laughter out of inadequate materials");
-		TextArea key = new TextArea("steinbeck");
-		TextArea output = new TextArea(Vigenere.encrypt(input.getText(), key.getText()));
-		input.textProperty().addListener((observable, oldValue, newValue) -> {
-			if (input.getText().equals("hackerman")) {
+		TextArea vigenereInput = new TextArea("it was her habit to build up laughter out of inadequate materials");
+		TextArea vigenereKey = new TextArea("steinbeck");
+		TextArea vigenereOutput = new TextArea(Vigenere.encrypt(vigenereInput.getText(), vigenereKey.getText()));
+		vigenereInput.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (vigenereInput.getText().equals("hackerman")) {
 				primaryScene.getStylesheets().add(getClass().getResource("matrix.css").toExternalForm());
 				primaryStage.sizeToScene();
 			}
-			output.setText(Vigenere.encrypt(input.getText(), key.getText()));
+			vigenereOutput.setText(Vigenere.encrypt(vigenereInput.getText(), vigenereKey.getText()));
 		});
-		key.textProperty().addListener((observable, oldValue, newValue) -> {
-			output.setText(Vigenere.encrypt(input.getText(), key.getText()));
+		vigenereKey.textProperty().addListener((observable, oldValue, newValue) -> {
+			vigenereOutput.setText(Vigenere.encrypt(vigenereInput.getText(), vigenereKey.getText()));
 		});
-		output.textProperty().addListener((observable, oldValue, newValue) -> {
-			input.setText(Vigenere.decrypt(output.getText(), key.getText()));
+		vigenereOutput.textProperty().addListener((observable, oldValue, newValue) -> {
+			vigenereInput.setText(Vigenere.decrypt(vigenereOutput.getText(), vigenereKey.getText()));
 		});
+		
+		TextArea rsaInput = null;
+		TextArea rsaKey = null;		//TODO
+		TextArea rsaOutput = null;
 		
 		board.add(new TextField("Vigenere Encryption"), 0, 0, 3, 1);
 		board.add(new TextField("Text"), 0, 1);
 		board.add(new TextField("Key"), 1, 1);
 		board.add(new TextField("Encrypted Text"), 2, 1);
 		
-		board.add(input, 0, 2);
-		board.add(key, 1, 2);
-		board.add(output, 2, 2);
+		board.add(new TextField("RSA Encryption"), 0, 3, 3, 1);
+		board.add(new TextField("Text"), 0, 4);
+		board.add(new TextField("Key"), 1, 4);
+		board.add(new TextField("Encrypted Text"), 2, 4);
+		
+		board.add(vigenereInput, 0, 2);
+		board.add(vigenereKey, 1, 2);		
+		board.add(vigenereOutput, 2, 2);
+		
+		board.add(rsaInput, 0, 5);
+		board.add(rsaKey, 1, 5);	
+		board.add(rsaOutput, 2, 5);
 		
 		board.getChildren().forEach(n -> {if (n instanceof TextField) ((TextField) n).setEditable(false);});
 		board.getChildren().forEach(n -> {if (n instanceof TextArea) ((TextArea) n).setWrapText(true);;});

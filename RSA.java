@@ -13,7 +13,7 @@ public class RSA {
 	
 	private int keyLength = 1024; 
 	private Random random;
-	private BigInteger one = BigInteger.ONE;
+	private static BigInteger one = BigInteger.ONE;
 	
    public RSA() {
 		
@@ -46,7 +46,7 @@ public class RSA {
 	}
 
 	
-	public  BigInteger encrypt(BigInteger message) {
+	public BigInteger encrypt(BigInteger message) {
 		return  message.modPow(e,n); // (e,n) is the public key
 		
 	}
