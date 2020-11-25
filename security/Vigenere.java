@@ -1,3 +1,5 @@
+package security;
+
 import java.util.function.BiFunction;
 
 public class Vigenere {
