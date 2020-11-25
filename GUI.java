@@ -46,18 +46,18 @@ public class GUI extends Application {
 		board.add(new TextField("Key"), 1, 1);
 		board.add(new TextField("Encrypted Text"), 2, 1);
 		
-		board.add(new TextField("RSA Encryption"), 0, 3, 3, 1);
+		/*board.add(new TextField("RSA Encryption"), 0, 3, 3, 1);
 		board.add(new TextField("Text"), 0, 4);
 		board.add(new TextField("Key"), 1, 4);
-		board.add(new TextField("Encrypted Text"), 2, 4);
+		board.add(new TextField("Encrypted Text"), 2, 4);*/
 		
 		board.add(vigenereInput, 0, 2);
 		board.add(vigenereKey, 1, 2);		
 		board.add(vigenereOutput, 2, 2);
 		
-		board.add(rsaInput, 0, 5);
+		/*board.add(rsaInput, 0, 5);
 		board.add(rsaKey, 1, 5);	
-		board.add(rsaOutput, 2, 5);
+		board.add(rsaOutput, 2, 5);*/
 		
 		board.getChildren().forEach(n -> {if (n instanceof TextField) ((TextField) n).setEditable(false);});
 		board.getChildren().forEach(n -> {if (n instanceof TextArea) ((TextArea) n).setWrapText(true);;});
