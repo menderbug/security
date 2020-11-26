@@ -160,7 +160,6 @@ public class DES {
         return key;
     }
 
-
     /**
      * Each round of DES is run using this method, increments iteration.
      * @param bits a BitSet where the left-most 32 bits represent the left value, and the right-most 32 bits
@@ -264,8 +263,6 @@ public class DES {
     private BitSet sboxTransform(BitSet bits, int[] sbox) {
     	int row = 0;
 		int column = 0;
-		
-		
 		for(int index = 0; index<bitlength+1; index+=6) {
 			
 			//gets first and last bit -> converts them into a string -> adds them into one string
@@ -281,7 +278,6 @@ public class DES {
 			System.out.println(row + " ROW; " + column + " COLUMN");
 			int x = sbox[roundnum][row*16];
 		}
-    	
 		return bits;
     }
     //Deepa
@@ -295,35 +291,35 @@ public class DES {
     		//left side is the first 28 bits
             BitSet Left = new BitSet();
             bits.stream().filter(a -> a < 28).forEach(Left::set);
-
-            //right side is the last 28 bits
+            
+            //right side is the last 28 bits      
             BitSet Right = new BitSet();
             bits.stream().filter(a -> a >= 28).forEach(a -> Right.set(a - 28));
-           
-            for(roundnum=0; roundnum<iteration; roundnum++) {
+            
+            BitSet Rightnew =Right;
+            for(int roundnum=0; roundnum<i; roundnum++) {
             	Left = leftCircularShift(Left, roundnum);
-                Right = leftCircularShift(Right, roundnum);
+            	Rightnew = leftCircularShift(Rightnew, roundnum);
             }
-            permutation
+            //combined the left and right side into one BitSet
+            BitSet combined = new BitSet();
+            Rightnew.stream().filter(a -> a >= 28).forEach(a -> combined.set(a - 28));
+            combined.xor(Left);
+            
+            this.subKeys[i] = permutation(combined, pc2box);
             
     	}
-    	
-		return subKeys;
-        //do the 16 rounds and change value of this.subKeys;
-        //return new BitSet[1];
     }
 
     //Deepa
     private BitSet leftCircularShift (BitSet bits,  int roundnum) {
-    	int shift = this.numShifts[iteration];
-    	BitSet temp = bits.get(shift, bits.length());
-    	
-    	for(int i = 1; i<shift+1; i++) {
-        	temp.set(bits.length()-i-1, bits.get(i-1));    		
+    	int shift = this.numShifts[roundnum];
+		BitSet temp = bits.get(shift, 28); 
+    	for(int i = shift; i>0; i--) {
+        	temp.set(28-i, bits.get(i-1));    		
     	}
     	
-		return bits;
-        //return new BitSet();
+		return temp;
     }
 
     /**
