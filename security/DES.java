@@ -106,34 +106,18 @@ public class DES {
     //TODO: write encode method
     public BitSet encrypt(String encryptText) {
         BitSet[] blockStrings = stringTo64Bits(encryptText);
-        BitSet[] bit = permutation(blockStrings,ipbox); //inital permutation
+        BitSet bit = new BitSet();
         
-        //left side (first 32 bits) 
-        BitSet Left = new BitSet();
-        bits.stream().filter(a -> a < 32).forEach(Left::set);
-        
-        //right side (last 32 bits)
-        BitSet Right = new BitSet();
-        bits.stream().filter(a -> a >= 32).forEach(a -> Right.set(a - 32));
-        for(int iter=0; iter<16; iter++) {
+        //runs through each set of 64 bits in BlcokString
+        for(int index = 0; index<blockStrings.length; index++) {
+        	bit = permutation(blockStrings[index],ipbox); //inital permutation
         	
-           Left.xor(round(bit));
-           
-           //Right side bits are switched to the left side and vice versa to set up for next round 
-           temp = Right;
-           Right = Left;
-           Left = temp;
-           
+        	for(int iter=0; iter<16; iter++) {     	
+                bit = round(bit);   
+             }
+             bit = permutation(bit, inverseipbox); //inverse permutation
         }
-        //switch Left and Right bits again
-        temp = Right;
-        Right = Left;
-        Left = temp;
-        
-        bits = permutation(bits, inverseipbox); //inverse permutation
-        return bits;
-        //return new BitSet();
-        
+        return bit;
     }
 
     // for triple DES, needs to be able to encrypt output
@@ -260,11 +244,11 @@ public class DES {
     }
 
     //Deepa
-    private BitSet sboxTransform(BitSet bits, int[] sbox) {
+    private BitSet sboxTransform(BitSet bits, int[][] sbox) {
     	int row = 0;
 		int column = 0;
 		String binarynum = "";
-		for(int index = 0; index<bitlength; index+=6) {
+		for(int index = 0; index<48; index+=6) {
 			//gets first and last bit to determine row number in bits
 			String rowbits = Integer.toString(bits.get(index) ? 1 : 0) + Integer.toString(bits.get(index+5) ? 1 : 0);
 			row = Integer.parseInt(rowbits,2);
@@ -277,7 +261,7 @@ public class DES {
 			column = Integer.parseInt(columnbits,2);
 			
 			//stores each number (4 bits) collected from sbox in binarynum (32 bits total)
-			int num = sbox[roundnum][(row*16)+column];
+			int num = sbox[iteration][(row*16)+column];
 			binarynum += Integer.toBinaryString(num+ 0b10000).substring(1);
 			
 		}
@@ -295,7 +279,7 @@ public class DES {
     }
 
     //Deepa
-    private BitSet[] generateSubkeys(BitSet bits){
+    private void generateSubkeys(BitSet bits){
     	for(int i = 0; i<16; i++) {
     		//left side is the first 28 bits
             BitSet Left = new BitSet();
