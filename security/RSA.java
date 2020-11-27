@@ -1,5 +1,7 @@
 package security;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,6 +14,9 @@ import java.util.Random;
 //For image display purposes
 import java.awt.Container;
 import java.awt.EventQueue;
+import java.awt.image.BufferedImage;
+
+import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -20,46 +25,70 @@ import javax.swing.JLabel;
 
 public class RSA {
 
-	private BigInteger p;
-	private BigInteger q;
-	private BigInteger n;
-	private BigInteger phi;
-	private BigInteger e;
-	private BigInteger d; // private key
+	private static BigInteger p;
+	private static BigInteger q;
+	private static BigInteger modulus; //n, part of public key
+	private static BigInteger phi;
+	private static BigInteger e; // public key exponent
+	private static BigInteger privateKey; // d
+	private final int keyLength = 1024; 
+	private static Random random;
 	
-	
-	private int keyLength = 1024; 
-	private Random random;
 	
    public RSA() {
 		
-		random = new Random();
-		p = BigInteger.probablePrime(keyLength, random); 
-		q = BigInteger.probablePrime(keyLength, random);
-		n = p.multiply(q); 
-		phi = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)); //phi(n) = (p–1)(q–1)
-		
-		e = new BigInteger ("65537"); // TO DO: e < n such that e is relatively prime to phi(n)
-		
-		//ed mod phi(n) = 1
-		d = e.modInverse(phi); 
+	 //Choosing two large prime numbers p, q
+	   random = new Random();
+	   p = BigInteger.probablePrime(keyLength/2, random); 
+	   q = BigInteger.probablePrime(keyLength/2, random);
+	
+	   //Creating modulus = pq such that phi(modulus) = (p-1)(q-1) 
+	   // (e,modulus) is the public key
+	   modulus = p.multiply(q); //n
+	   phi = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)); 
+	   e =  BigInteger.probablePrime(keyLength/2, random); 
+	   e = exponentCheck(e,phi,modulus);
+	   
+	   //Choose d such that ed mod phi(n) = 1
+	   //Use checkPrivateKey to test that this is 
+	   privateKey = e.modInverse(phi); //d
   	}	
 	
 	public static void main(String[] args) throws IOException {
 		
-		RSA test = new RSA();
+        RSA test = new RSA();
 		
-		String plainText = "HELLO";
-		byte[] bytes = plainText.getBytes();
-		BigInteger message = new BigInteger(bytes);
+		//Testing private key and public key
+        //Wasn't sure how we wanted to print out the keys so I made methods to print them individually and as a key pair
+        //We can delete the ones we don't want later
+		System.out.println("Public Key: " + getPublicKey());
+		System.out.println("Private Key: " + getPrivateKey());
+		System.out.println("Generating key pair... ");
+		System.out.println(generateKeyPair()); //key pair
+		System.out.println("Private key check is: " + checkPrivateKey(e,privateKey, phi));
 		
-		BigInteger encrypt = test.encrypt(message);
-		BigInteger decrypt = test.decrypt(encrypt);
 		
-		System.out.println("message in plaintext: " + new String(message.toByteArray()));
+		//Testing string encryption/decryption
+		//Uses encrypt and decrypt methods
+		String plainText = "meet me behind the mall";
+		BigInteger encrypt = encrypt(plainText);
+		String decrypt = decrypt(encrypt);
+		System.out.println("original message in plaintext: " + plainText);
 		System.out.println("encrypted message: " + encrypt);
-		System.out.println("decrypted message in plaintext: "+ new String(decrypt.toByteArray()));
+		System.out.println("decrypted message in plaintext: "+ decrypt);
 		
+	
+		//Second attempt for image encryption starts here
+		//Uses getImageBytes and encryptImage methods
+		byte[] originalBytes = getImageBytes("happyduck.jpg");
+		String originalBytesToString = originalBytes.toString();
+		System.out.println("bytes from original image: " + originalBytesToString);
+		FileOutputStream encryptedImageFile = new FileOutputStream("encryptedhappyduck.jpg");
+		encryptedImageFile.write(encryptImage(originalBytes));
+		encryptedImageFile.close();
+		
+		
+		/*
 		//File i/o for the duck and the encrypted image
 		FileInputStream originalImage =  new FileInputStream("happyduck.jpg");
 		FileOutputStream encryptedImageFile = new FileOutputStream("encryptedhappyduck.jpg");
@@ -94,7 +123,7 @@ public class RSA {
 		decryptedImageFile.close();
 		encryptedImage.close();
 		
-		
+		*/
 		//Display the original
 		EventQueue.invokeLater(() -> {
             DisplayImage ex = test.new DisplayImage("happyduck.jpg", "original");
@@ -107,25 +136,87 @@ public class RSA {
             ex.setVisible(true);
         });
 		
+		
 		//Display the decrypted image
 		EventQueue.invokeLater(() -> {
             DisplayImage ex = test.new DisplayImage("decryptedhappyduck.jpg", "decrypted");
             ex.setVisible(true);
         });
-		*/
+	
 		
 		
 	}
-
 	
-	public BigInteger encrypt(BigInteger message) {
-		return  message.modPow(e,n); // (e,n) is the public key
+	//Checks that private key is correct 
+	//Should return e(privateKey)mod(phi) = 1
+	public static BigInteger checkPrivateKey(BigInteger numberE, BigInteger numberD, BigInteger numberP){
+		return (numberE.multiply(numberD)).mod(numberP);
+	}
+	
+	//Chooses e < modulus such that e is relatively prime to phi(modulus)
+	public static BigInteger exponentCheck(BigInteger numberE, BigInteger numberP, BigInteger numberM ){
+		
+		//First half: checks that modulus > e 
+		//Second half: checks that  e is relatively prime to phi by checking if 1 is the gcd 
+		 while (numberM.compareTo(numberE) > 0 && numberP.gcd(numberE).compareTo(BigInteger.ONE) > 0 ){ 
+			   	numberE.add(BigInteger.ONE);
+			   	}
+		 return numberE;
+	}
+	
+	//Returns public key in the form (e,modulus)
+	public static String getPublicKey(){
+		return "(" + e.toString() +" , "+ modulus.toString() + ")";
+	}
+	
+	//Returns private key
+	public static String getPrivateKey(){
+		return privateKey.toString();
+	}
+	
+	//Generates public key AND private key
+	public static String generateKeyPair()
+	{
+		return "Public Key: " + getPublicKey() +"\n" +"Private Key: " + getPrivateKey();
+	}
+	
+	//Encryption method for Strings
+	public static BigInteger encrypt(String message){
+		BigInteger messageBytes = new BigInteger(message.getBytes());
+		return messageBytes.modPow(e,modulus);
 		
 	}
 	
-	public BigInteger decrypt(BigInteger message) {
-		return message.modPow(d,n);
+	//Second attempt at encrypting image
+	public static byte[] encryptImage(byte[] image){
+		byte [] encryptedImage = new byte[image.length];		
 		
+		//encrypting every single byte of image
+		//This actually takes alot of time...so i'm going to try to rethink this lol
+		//Possible problem: could this be a problem of how i am trying to encrypt an 8 bit input using 1024 key?
+		for(int i = 0; i < image.length;i++){
+			BigInteger byteToBigInteger = BigInteger.valueOf(image[i]);
+			//System.out.println(byteToBigInteger.toString()); 
+			encryptedImage[i] = (byteToBigInteger).modPow(e,modulus).byteValue();
+			
+		}
+	   return encryptedImage;
+	}
+	
+	//Decryption method for Strings
+	public static String decrypt(BigInteger message){
+		BigInteger decrypt = message.modPow(privateKey,modulus);
+		return new String (decrypt.toByteArray());
+	    
+	}
+	
+	//Returns the bytes of image input
+	public static byte[] getImageBytes(String path) throws IOException {
+		BufferedImage original = ImageIO.read(new File (path));
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		ImageIO.write(original, "jpg", output);
+		
+		return output.toByteArray();
 	}
 	
 	/* Nested class for testing only */
