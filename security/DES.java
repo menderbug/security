@@ -263,22 +263,31 @@ public class DES {
     private BitSet sboxTransform(BitSet bits, int[] sbox) {
     	int row = 0;
 		int column = 0;
-		for(int index = 0; index<bitlength+1; index+=6) {
-			
-			//gets first and last bit -> converts them into a string -> adds them into one string
+		String binarynum = "";
+		for(int index = 0; index<bitlength; index+=6) {
+			//gets first and last bit to determine row number in bits
 			String rowbits = Integer.toString(bits.get(index) ? 1 : 0) + Integer.toString(bits.get(index+5) ? 1 : 0);
 			row = Integer.parseInt(rowbits,2);
 			
-			//gets middle 4 bits between first and last index and converts it to a string
+			//gets middle 4 bits between first and last index to determine column number bits
 			String columnbits = "";
 			for(int j = index+1; j<index+5; j++) { // how to make it without for loop?
 				columnbits += Integer.toString(bits.get(j) ? 1 : 0);
 			}
 			column = Integer.parseInt(columnbits,2);
-			System.out.println(row + " ROW; " + column + " COLUMN");
-			int x = sbox[roundnum][row*16];
+			
+			//stores each number (4 bits) collected from sbox in binarynum (32 bits total)
+			int num = sbox[roundnum][(row*16)+column];
+			binarynum += Integer.toBinaryString(num+ 0b10000).substring(1);
+			
 		}
-		return bits;
+		//converts 32 bit string to BitSet
+		BitSet aftersbox = new BitSet();
+		for(int i = 0; i<binarynum.length(); i++) {
+			if(binarynum.charAt(i) == '1')
+				aftersbox.set(i);
+		}
+		return aftersbox;
     }
     //Deepa
     private BitSet reverseSBoxTransform(BitSet bits, int[] sbox) {
