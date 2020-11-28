@@ -3,7 +3,9 @@ package security;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import java.math.BigInteger;
@@ -14,6 +16,7 @@ import java.util.Random;
 //For image display purposes
 import java.awt.Container;
 import java.awt.EventQueue;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
@@ -37,7 +40,7 @@ public class RSA {
 	
    public RSA() {
 		
-	 //Choosing two large prime numbers p, q
+	   //Choosing two large prime numbers p, q
 	   random = new Random();
 	   p = BigInteger.probablePrime(keyLength/2, random); 
 	   q = BigInteger.probablePrime(keyLength/2, random);
@@ -50,10 +53,12 @@ public class RSA {
 	   e = exponentCheck(e,phi,modulus);
 	   
 	   //Choose d such that ed mod phi(n) = 1
-	   //Use checkPrivateKey to test that this is 
+	   //Use checkPrivateKey to test that this is true
 	   privateKey = e.modInverse(phi); //d
   	}	
 	
+   //Everything in Main is for testing purposes
+   //Will delete once we figure out tf how to encrypt the images :(
 	public static void main(String[] args) throws IOException {
 		
         RSA test = new RSA();
@@ -70,6 +75,7 @@ public class RSA {
 		
 		//Testing string encryption/decryption
 		//Uses encrypt and decrypt methods
+		//Note: I also tested encryption on a text file with the encrypt method and it worked just fine
 		String plainText = "meet me behind the mall";
 		BigInteger encrypt = encrypt(plainText);
 		String decrypt = decrypt(encrypt);
@@ -77,8 +83,25 @@ public class RSA {
 		System.out.println("encrypted message: " + encrypt);
 		System.out.println("decrypted message in plaintext: "+ decrypt);
 		
-	
-		//Second attempt for image encryption starts here
+		
+		//Third attempt for image encryption
+		//Uses splitImage and encryptImage2 methods
+		//Splitting original into smaller images, attempting to encrypt these smaller images
+		BufferedImage[] originalToSmall = convertImage("happyduck.jpg");
+		FileOutputStream encryptedImageFile2 = new FileOutputStream("encryptedhappyduck.jpg");
+		
+		for(int z = 0; z < originalToSmall.length;z++)
+		{
+			//Encrypting each individual image and then writing to encrypted file
+			//This also doesn't work for some reason
+			//I think there is problem with converting from bytes to big integer and back to bytes?
+			byte[] smallerBytes = bufferToByte(originalToSmall[z], "jpg");
+			encryptedImageFile2.write(encryptImage2(smallerBytes));		
+		}
+		encryptedImageFile2.close();
+		
+		
+		/*Second attempt for image encryption starts here
 		//Uses getImageBytes and encryptImage methods
 		byte[] originalBytes = getImageBytes("happyduck.jpg");
 		String originalBytesToString = originalBytes.toString();
@@ -86,9 +109,9 @@ public class RSA {
 		FileOutputStream encryptedImageFile = new FileOutputStream("encryptedhappyduck.jpg");
 		encryptedImageFile.write(encryptImage(originalBytes));
 		encryptedImageFile.close();
+		*/
 		
-		
-		/*
+		/*First attempt for image encryption starts here
 		//File i/o for the duck and the encrypted image
 		FileInputStream originalImage =  new FileInputStream("happyduck.jpg");
 		FileOutputStream encryptedImageFile = new FileOutputStream("encryptedhappyduck.jpg");
@@ -124,6 +147,7 @@ public class RSA {
 		encryptedImage.close();
 		
 		*/
+		
 		//Display the original
 		EventQueue.invokeLater(() -> {
             DisplayImage ex = test.new DisplayImage("happyduck.jpg", "original");
@@ -175,8 +199,7 @@ public class RSA {
 	}
 	
 	//Generates public key AND private key
-	public static String generateKeyPair()
-	{
+	public static String generateKeyPair(){
 		return "Public Key: " + getPublicKey() +"\n" +"Private Key: " + getPrivateKey();
 	}
 	
@@ -186,21 +209,26 @@ public class RSA {
 		return messageBytes.modPow(e,modulus);
 		
 	}
-	
 	//Second attempt at encrypting image
 	public static byte[] encryptImage(byte[] image){
-		byte [] encryptedImage = new byte[image.length];		
-		
-		//encrypting every single byte of image
-		//This actually takes alot of time...so i'm going to try to rethink this lol
-		//Possible problem: could this be a problem of how i am trying to encrypt an 8 bit input using 1024 key?
-		for(int i = 0; i < image.length;i++){
-			BigInteger byteToBigInteger = BigInteger.valueOf(image[i]);
-			//System.out.println(byteToBigInteger.toString()); 
-			encryptedImage[i] = (byteToBigInteger).modPow(e,modulus).byteValue();
+			byte [] encryptedImage = new byte[image.length];		
 			
-		}
-	   return encryptedImage;
+			//encrypting every single byte of image
+			//This actually takes alot of time...so i'm going to try to rethink this lol
+			//Possible problem: could this be a problem of how i am trying to encrypt an 8 bit input using 1024 key?
+			//Possible problem: when i print out the big integers, some are negative? from what i understand RSA cannot work on negative values right?
+			for(int i = 0; i < image.length;i++){
+				BigInteger byteToBigInteger = BigInteger.valueOf(image[i]);
+				//System.out.println(byteToBigInteger.toString()); 
+				encryptedImage[i] = (byteToBigInteger).modPow(e,modulus).byteValue();
+				
+			}
+		   return encryptedImage;
+	}
+	
+	public static byte[] encryptImage2(byte[] image){
+		BigInteger imageBigInt = new BigInteger(image);
+		return (imageBigInt.modPow(e,modulus)).toByteArray();
 	}
 	
 	//Decryption method for Strings
@@ -218,6 +246,54 @@ public class RSA {
 		
 		return output.toByteArray();
 	}
+	
+	//Converts buffered image to byte array
+	public static byte[] bufferToByte(BufferedImage image, String format) throws IOException{
+		    ByteArrayOutputStream input = new ByteArrayOutputStream();
+	        ImageIO.write(image, format, input);
+	        return input.toByteArray();
+	}
+	
+	//This splits the original image into smaller images 
+	//Produces a buffer image array with all these small images
+	public static BufferedImage[] convertImage(String path) throws IOException{
+		File originalImage = new File(path);
+		FileInputStream input = new FileInputStream(originalImage);
+		BufferedImage image = ImageIO.read(input);
+		
+		//rows and column sizes can be changed
+		int rows = 3;
+		int cols = 3;
+		int chunks = rows*cols;
+		
+		//width and height of the chunk of images
+		int width = image.getWidth()/cols;
+		int height = image.getHeight()/rows;
+		
+		int count = 0;
+		
+		//image array that will hold the chunks of images
+		BufferedImage[] smallerImages = new BufferedImage[chunks]; 
+		
+		for(int x = 0; x < rows;x++){
+			for(int y = 0; y < cols;y++){
+				//creates image chunk with the	width and height that we established earlier
+				smallerImages[count] = new BufferedImage(width,height,image.getType());
+				//This should draw the new smaller images? I think?
+				Graphics2D graphic = smallerImages[count].createGraphics();
+				graphic.drawImage(image, 0, 0, width, height,width * y, height * x, width * y + width, height * x + height, null);
+				graphic.dispose();
+				count++;
+				}
+			}
+		
+		for(int i = 0; i<smallerImages.length;i++){
+			//This actually creates these smaller images of type jpg
+			ImageIO.write(smallerImages[i],"jpg", new File("img" + i + ".jpg"));
+			}
+		return smallerImages;
+	}
+	
 	
 	/* Nested class for testing only */
 	@SuppressWarnings("serial")
