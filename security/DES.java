@@ -123,7 +123,7 @@ public class DES {
         		encryptedbits.set(i+(index*64), bit.get(i));
         	}
         }
-                
+        //return convertBitsToText(encryptedbits, blockStrings.length); would return text as encrypted
         return encryptedbits;
     }
 
@@ -133,8 +133,28 @@ public class DES {
     }
 
     //TODO: write decrypt method
-    public String decrypt(BitSet decryptText, BitSet key) {
-        return "";
+    public String decrypt(String decryptText, BitSet key) {
+    	BitSet[] blockStrings = stringTo64Bits(decryptText);
+        BitSet decryptedbits = new BitSet();
+         
+         //runs through each set of 64 bits in BlockString
+         for(int index = 0; index<blockStrings.length; index+=64) {
+         	BitSet bit = permutation(blockStrings[index],inverseipbox); //inverse permutation
+         	//runs 16 rounds on each 64 bit group
+         	for(int iter=0; iter<16; iter++) {     	
+                 bit = reverseRound(bit);   
+              }
+         	
+         	bit = permutation(bit, ipbox); //initial permutation
+         	
+         	//adds each set of 64 encrypted bits to encryptedbits
+         	for(int i = 0; i<64; i++) {
+         		decryptedbits.set(i+(index*64), bit.get(i));
+         	}
+         }
+         
+         //converts bits to text and returns text output
+    	return convertBitsToText(decryptedbits, blockStrings.length);
     }
 
     /**
@@ -373,4 +393,24 @@ public class DES {
         }
         return bitset;
     }
+    
+    /**
+     * Converts bits stored in BitSet into text
+     * @param BitSet and length of array holding 64 bit chunks extracted from text
+     * @return a String representing the textual output of the bits stored in BitSet
+     */
+    private String convertBitsToText(BitSet bits, int length) {
+    	String text = "";
+    	//Converts BitSet to String of 1s and 0s
+    	for(int i = 0; i<length*64; i++) {
+    		text+=Integer.toString(bits.get(i) ? 1 : 0);
+    	}
+    	
+    	//converts String of 1s and 0s to text 
+    	int charCode = Integer.parseInt(text, 2);
+    	String str = new Character((char)charCode).toString();
+    	
+    	return str;
+
+	}
 }
