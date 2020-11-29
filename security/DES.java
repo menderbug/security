@@ -24,7 +24,7 @@ public class DES {
                                         2, 8, 24, 14, 32, 27, 3, 9,
                                         19, 13, 30, 6, 22, 11, 4, 25};
     //TODO: the rest of these sboxes
-    private final int[][] sbox = {
+    private final static int[][] sbox = {
       		 {
       		        14, 4,  13, 1,  2,  15, 11, 8,  3,  10, 6,  12, 5,  9,  0,  7,
       		        0,  15, 7,  4,  14, 2,  13, 1,  10, 6,  12, 11, 9,  5,  3,  8,
@@ -94,22 +94,23 @@ public class DES {
     private static final int[] numShifts = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
     private final BitSet key;
-    private final BitSet[] subKeys;
-    private int iteration;
+    private static BitSet[] subKeys = {};
+    private static int iteration;
 
     public DES() {
         this.iteration = 0;
         this.key = generateKey();
-        this.subKeys = generateSubkeys(this.key);
+        subKeys = generateSubkeys(this.key);
     }
 
     //TODO: write encode method
-    public String encrypt(String encryptText) {
+    public static String encrypt(String encryptText) {
         BitSet[] blockStrings = stringTo64Bits(encryptText);
         BitSet encryptedbits = new BitSet();
         
         //runs through each set of 64 bits in BlockString
         for(int index = 0; index<blockStrings.length; index++) {
+        	iteration = 0;
         	BitSet bit = permutation(blockStrings[index],ipbox); //initial permutation
         	//runs 16 rounds on each 64 bit group
         	for(int iter=0; iter<16; iter++) {     	
@@ -177,7 +178,7 @@ public class DES {
      *             represent the right value.
      * @return a BitSet where the left and right are
      */
-    private BitSet round(BitSet bits){
+    private static BitSet round(BitSet bits){
         //initially, left side is the first 32 bits
         BitSet initialLeft = new BitSet();
         bits.stream().filter(a -> a < 32).forEach(initialLeft::set);
@@ -187,14 +188,14 @@ public class DES {
         bits.stream().filter(a -> a >= 32).forEach(a -> initialRight.set(a - 32));
 
         //Create new BitSet to store the value of f function of initialRight, xor-ed with initialLeft
-        BitSet newRight = this.f(initialRight);
+        BitSet newRight = f(initialRight);
         newRight.xor(initialLeft);
 
         //finalValue's first 32 bits are the initialRight value
         //Set the last 32 bits of finalValue to the values of newRight
         newRight.stream().forEach(a -> initialRight.set(a + 32));
 
-        this.iteration++;
+        iteration++;
         return initialRight;
     }
 
@@ -229,7 +230,7 @@ public class DES {
      * @param box permutation table
      * @return
      */
-    private BitSet permutation(BitSet bits, int[] box) {
+    private static BitSet permutation(BitSet bits, int[] box) {
         BitSet permutedBits = new BitSet();
         for(int position = 0; position < box.length; position++) {
             permutedBits.set(position, bits.get(box[position]));
@@ -252,8 +253,9 @@ public class DES {
     /**
      * f function in the DES algorithm, which applies a 48-bit key to the right 32 bits to produce a 32 bit output
      */
-    private BitSet f(BitSet input) {
+    private static BitSet f(BitSet input) {
         BitSet bits = permutation(input, ebox);
+        System.out.println(iteration + " ITERATION");
         bits.xor(subKeys[iteration]);
         bits = sboxTransform(bits,sbox);
         bits = permutation(bits,pbox);
@@ -273,7 +275,7 @@ public class DES {
     /**
      * Implements sbox on text which takes in 48 bits and reduces it to 32 bits
      */
-    private BitSet sboxTransform(BitSet bits, int[][] sbox) {
+    private static BitSet sboxTransform(BitSet bits, int[][] sbox) {
     	int row = 0;
 		int column = 0;
 		String binarynum = "";
@@ -289,10 +291,10 @@ public class DES {
 				columnbits += Integer.toString(bits.get(j) ? 1 : 0);
 			}
 			column = Integer.parseInt(columnbits,2);
-			
+			columnbits = "";
 			//get the number from the sbox table and converts it to 4 bits. each group of 4 bits is appended to the binarynum. 
 			//In the end binarynum is 32 bits 
-			int num = sbox[iteration][(row*16)+column];
+			int num = sbox[index/6][(row*16)+column];
 			binarynum += Integer.toBinaryString(num+ 0b10000).substring(1);
 			
 		}
@@ -360,11 +362,12 @@ public class DES {
      * @param inputString
      * @return String array with each entry having 8 characters
      */
-    private BitSet[] stringTo64Bits(String inputString) {
+    private static BitSet[] stringTo64Bits(String inputString) {
         int length = (inputString.length() / 8) + 1;
         BitSet[] output = new BitSet[length];
+        System.out.println(output.length + "OUTPUT LENGTH");
         for(int i = 0; i < output.length; i++) {
-            output[i] = this.stringToBitString(inputString.substring(i * 8, (i + 1) * 8));
+            output[i] = stringToBitString(inputString.substring(i * 8, (i * 8)+1));
         }
         return output;
     }
@@ -375,7 +378,7 @@ public class DES {
      * @param inputString
      * @return a String as represented in binary via ASCII values of each character (64 digits long)
      */
-    private BitSet stringToBitString(String inputString) {
+    private static BitSet stringToBitString(String inputString) {
         BitSet bitset = new BitSet();
         StringBuilder sbr = new StringBuilder();
         for (char c : inputString.toCharArray()) {

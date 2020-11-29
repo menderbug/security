@@ -15,6 +15,7 @@ public class GUI extends Application {
 
 	public void start(Stage primaryStage) throws Exception {
 		
+		DES des = new DES();
 		Scene primaryScene = new Scene(board);
 		primaryStage.setScene(primaryScene);
 		
@@ -36,6 +37,11 @@ public class GUI extends Application {
 			vigenereInput.setText(Vigenere.decrypt(vigenereOutput.getText(), vigenereKey.getText()));
 		});
 		
+		//DES Implementation
+		TextArea DESInput = new TextArea("Unless I had been animated by an almost supernatural enthusiasm, my application to this study would have been irksome");
+		TextArea DESKey = new TextArea(DES.convertBitsToText(DES.generateKey(), 1));
+		TextArea DESOutput = new TextArea(DES.encrypt(DESInput.getText()));
+		
 		TextArea rsaInput = null;
 		TextArea rsaKey = null;		//TODO
 		TextArea rsaOutput = null;
@@ -45,6 +51,12 @@ public class GUI extends Application {
 		board.add(new TextField("Key"), 1, 1);
 		board.add(new TextField("Encrypted Text"), 2, 1);
 		
+		board.add(new TextField("DES Encryption"), 0, 3, 3, 1);
+		board.add(new TextField("Text"), 0, 4);
+		board.add(new TextField("Key"), 1, 4);
+		board.add(new TextField("Encrypted Text"), 2, 4);
+		
+		
 		/*board.add(new TextField("RSA Encryption"), 0, 3, 3, 1);
 		board.add(new TextField("Text"), 0, 4);
 		board.add(new TextField("Key"), 1, 4);
@@ -53,6 +65,10 @@ public class GUI extends Application {
 		board.add(vigenereInput, 0, 2);
 		board.add(vigenereKey, 1, 2);		
 		board.add(vigenereOutput, 2, 2);
+		
+		board.add(DESInput, 0, 5);
+		board.add(DESKey, 1, 5);
+		board.add(DESOutput, 2, 5);
 		
 		/*board.add(rsaInput, 0, 5);
 		board.add(rsaKey, 1, 5);	
