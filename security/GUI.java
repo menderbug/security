@@ -40,21 +40,25 @@ public class GUI extends Application {
 		//DES Implementation
 		TextArea DESInput = new TextArea("Unless I had been animated by an almost supernatural enthusiasm, my application to this study would have been irksome");
 		TextArea DESKey = new TextArea(DES.convertBitsToText(DES.generateKey(), 1));
-		TextArea DESOutput = new TextArea(DES.encrypt(DESInput.getText()));
+		String encryptedtext  = DES.encrypt(DESInput.getText());
+		TextArea DESEncyptedText = new TextArea(encryptedtext);
+		TextArea DESDecryptedText = new TextArea(DES.decrypt(encryptedtext,DESKey.getText()));
 		
 		TextArea rsaInput = null;
 		TextArea rsaKey = null;		//TODO
 		TextArea rsaOutput = null;
 		
-		board.add(new TextField("Vigenere Encryption"), 0, 0, 3, 1);
+		board.add(new TextField("Vigenere Encryption"), 0, 0, 4, 1);
 		board.add(new TextField("Text"), 0, 1);
 		board.add(new TextField("Key"), 1, 1);
 		board.add(new TextField("Encrypted Text"), 2, 1);
 		
-		board.add(new TextField("DES Encryption"), 0, 3, 3, 1);
+		board.add(new TextField("DES Encryption"), 0, 3, 5, 1);
 		board.add(new TextField("Text"), 0, 4);
 		board.add(new TextField("Key"), 1, 4);
 		board.add(new TextField("Encrypted Text"), 2, 4);
+		board.add(new TextField("Decrypted Text"), 0, 6);
+
 		
 		
 		/*board.add(new TextField("RSA Encryption"), 0, 3, 3, 1);
@@ -68,7 +72,8 @@ public class GUI extends Application {
 		
 		board.add(DESInput, 0, 5);
 		board.add(DESKey, 1, 5);
-		board.add(DESOutput, 2, 5);
+		board.add(DESEncyptedText, 2, 5);
+		board.add(DESDecryptedText, 0, 7);
 		
 		/*board.add(rsaInput, 0, 5);
 		board.add(rsaKey, 1, 5);	
