@@ -104,7 +104,7 @@ public class DES {
     }
 
     //TODO: write encode method
-    public BitSet encrypt(String encryptText) {
+    public String encrypt(String encryptText) {
         BitSet[] blockStrings = stringTo64Bits(encryptText);
         BitSet encryptedbits = new BitSet();
         
@@ -123,8 +123,8 @@ public class DES {
         		encryptedbits.set(i+(index*64), bit.get(i));
         	}
         }
-        //return convertBitsToText(encryptedbits, blockStrings.length); would return text as encrypted
-        return encryptedbits;
+        return convertBitsToText(encryptedbits, blockStrings.length); 
+        //return encryptedbits;
     }
 
     // for triple DES, needs to be able to encrypt output
@@ -161,7 +161,7 @@ public class DES {
      * Generates the key for DES using random digits
      * @return 64-bit binary key
      */
-    private static BitSet generateKey() {
+    public static BitSet generateKey() {
         BitSet key = new BitSet();
         for(int i = 0; i < 64; i++) {
             if(Math.random() < 0.5) {
@@ -382,7 +382,7 @@ public class DES {
             String binaryValue = Integer.toBinaryString(c);
             //add leading zeroes to numbers that have fewer than 8 bits
             if (binaryValue.length() < 8) {
-                sbr.append("0".repeat(8 - binaryValue.length()));
+                //sbr.append("0".repeat(8 - binaryValue.length()));
             }
             sbr.append(binaryValue);
         }
@@ -399,16 +399,20 @@ public class DES {
      * @param BitSet and length of array holding 64 bit chunks extracted from text
      * @return a String representing the textual output of the bits stored in BitSet
      */
-    private String convertBitsToText(BitSet bits, int length) {
+    static String convertBitsToText(BitSet bits, int length) {
+    	String str = "";
     	String text = "";
     	//Converts BitSet to String of 1s and 0s
     	for(int i = 0; i<length*64; i++) {
     		text+=Integer.toString(bits.get(i) ? 1 : 0);
     	}
-    	
     	//converts String of 1s and 0s to text 
-    	int charCode = Integer.parseInt(text, 2);
-    	String str = new Character((char)charCode).toString();
+    	for (int i = 0; i < text.length()/8; i++) {
+    		int a = Integer.parseInt(text.substring(8*i,(i+1)*8),2);
+            str += (char)(a);
+
+    	}
+    	
     	
     	return str;
 
