@@ -30,31 +30,27 @@ public class RSA {
 
 	private static BigInteger p;
 	private static BigInteger q;
-	private static BigInteger modulus; //n, part of public key
+	private static BigInteger modulus;//n, part of public key
 	private static BigInteger phi;
 	private static BigInteger e; // public key exponent
-	private static BigInteger privateKey; // d
-	private final int keyLength = 1024; 
+	private static BigInteger privateKey;
+	private final int keyLength = 512; 
 	private static Random random;
 	
 	
    public RSA() {
 		
-	   //Choosing two large prime numbers p, q
-	   random = new Random();
-	   p = BigInteger.probablePrime(keyLength/2, random); 
-	   q = BigInteger.probablePrime(keyLength/2, random);
-	
-	   //Creating modulus = pq such that phi(modulus) = (p-1)(q-1) 
-	   // (e,modulus) is the public key
-	   modulus = p.multiply(q); //n
-	   phi = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)); 
-	   e =  BigInteger.probablePrime(keyLength/2, random); 
-	   e = exponentCheck(e,phi,modulus);
+	    //Choosing two large prime numbers p, q
+	   	random = new Random();
+	    p = getPrime(keyLength,random);
+	    q = getPrime(keyLength,random);
 	   
-	   //Choose d such that ed mod phi(n) = 1
-	   //Use checkPrivateKey to test that this is true
-	   privateKey = e.modInverse(phi); //d
+	    modulus = calculateModulus(p,q); //n, part of public key
+		phi = calculatePhi(p,q);
+		
+		e = getPrime(keyLength,random);
+		e = exponentCheck(e, p, modulus); // public key exponent
+		privateKey = e.modInverse(phi); // d	
   	}	
 	
    //Everything in Main is for testing purposes
@@ -63,25 +59,15 @@ public class RSA {
 		
         RSA test = new RSA();
 		
-		//Testing private key and public key
-        //Wasn't sure how we wanted to print out the keys so I made methods to print them individually and as a key pair
-        //We can delete the ones we don't want later
-		System.out.println("Public Key: " + getPublicKey());
-		System.out.println("Private Key: " + getPrivateKey());
-		System.out.println("Generating key pair... ");
-		System.out.println(generateKeyPair()); //key pair
-		System.out.println("Private key check is: " + checkPrivateKey(e,privateKey, phi));
-		
-		
 		//Testing string encryption/decryption
 		//Uses encrypt and decrypt methods
 		//Note: I also tested encryption on a text file with the encrypt method and it worked just fine
-		String plainText = "meet me behind the mall";
+		String plainText = "all the girls with heads inside a dream so now we live beside the pool where everything is good";
 		BigInteger encrypt = encrypt(plainText);
 		String decrypt = decrypt(encrypt);
 		System.out.println("original message in plaintext: " + plainText);
-		System.out.println("encrypted message: " + encrypt);
-		System.out.println("decrypted message in plaintext: "+ decrypt);
+		System.out.println("encrypted message: " + encrypt.toString());
+		System.out.println("decrypted message in plaintext: "+ decrypt.toString());
 		
 		
 		//Third attempt for image encryption
@@ -148,6 +134,7 @@ public class RSA {
 		
 		*/
 		
+		/*
 		//Display the original
 		EventQueue.invokeLater(() -> {
             DisplayImage ex = test.new DisplayImage("happyduck.jpg", "original");
@@ -167,41 +154,10 @@ public class RSA {
             ex.setVisible(true);
         });
 	
+		*/
 		
-		
 	}
 	
-	//Checks that private key is correct 
-	//Should return e(privateKey)mod(phi) = 1
-	public static BigInteger checkPrivateKey(BigInteger numberE, BigInteger numberD, BigInteger numberP){
-		return (numberE.multiply(numberD)).mod(numberP);
-	}
-	
-	//Chooses e < modulus such that e is relatively prime to phi(modulus)
-	public static BigInteger exponentCheck(BigInteger numberE, BigInteger numberP, BigInteger numberM ){
-		
-		//First half: checks that modulus > e 
-		//Second half: checks that  e is relatively prime to phi by checking if 1 is the gcd 
-		 while (numberM.compareTo(numberE) > 0 && numberP.gcd(numberE).compareTo(BigInteger.ONE) > 0 ){ 
-			   	numberE.add(BigInteger.ONE);
-			   	}
-		 return numberE;
-	}
-	
-	//Returns public key in the form (e,modulus)
-	public static String getPublicKey(){
-		return "(" + e.toString() +" , "+ modulus.toString() + ")";
-	}
-	
-	//Returns private key
-	public static String getPrivateKey(){
-		return privateKey.toString();
-	}
-	
-	//Generates public key AND private key
-	public static String generateKeyPair(){
-		return "Public Key: " + getPublicKey() +"\n" +"Private Key: " + getPrivateKey();
-	}
 	
 	//Encryption method for Strings
 	public static BigInteger encrypt(String message){
@@ -209,33 +165,76 @@ public class RSA {
 		return messageBytes.modPow(e,modulus);
 		
 	}
-	//Second attempt at encrypting image
-	public static byte[] encryptImage(byte[] image){
-			byte [] encryptedImage = new byte[image.length];		
-			
-			//encrypting every single byte of image
-			//This actually takes alot of time...so i'm going to try to rethink this lol
-			//Possible problem: could this be a problem of how i am trying to encrypt an 8 bit input using 1024 key?
-			//Possible problem: when i print out the big integers, some are negative? from what i understand RSA cannot work on negative values right?
-			for(int i = 0; i < image.length;i++){
-				BigInteger byteToBigInteger = BigInteger.valueOf(image[i]);
-				//System.out.println(byteToBigInteger.toString()); 
-				encryptedImage[i] = (byteToBigInteger).modPow(e,modulus).byteValue();
-				
-			}
-		   return encryptedImage;
-	}
-	
-	public static byte[] encryptImage2(byte[] image){
-		BigInteger imageBigInt = new BigInteger(image);
-		return (imageBigInt.modPow(e,modulus)).toByteArray();
-	}
 	
 	//Decryption method for Strings
 	public static String decrypt(BigInteger message){
 		BigInteger decrypt = message.modPow(privateKey,modulus);
 		return new String (decrypt.toByteArray());
-	    
+		    
+		}
+		
+	//Checks that private key is correct 
+	//Should return e(privateKey)mod(phi) = 1
+	public static BigInteger checkPrivateKey(BigInteger numberE, BigInteger numberD, BigInteger numberP){
+		return (numberE.multiply(numberD)).mod(numberP);
+		}
+	
+	//Chooses e < modulus such that e is relatively prime to phi(modulus)
+	public static BigInteger exponentCheck(BigInteger numberE, BigInteger numberP, BigInteger numberM ){
+		//First half: checks that modulus > e 
+		//Second half: checks that  e is relatively prime to phi by checking if 1 is the gcd 
+		while (numberM.compareTo(numberE) > 0 && numberP.gcd(numberE).compareTo(BigInteger.ONE) > 0 ){ 
+			numberE.add(BigInteger.ONE);
+				  }
+		return numberE;
+		}
+		
+	public static BigInteger getPrime(int length, Random r){
+		return new BigInteger(length,100,r);
+		}
+		
+	public static BigInteger calculatePhi(BigInteger numberP, BigInteger numberQ){
+		return numberP.subtract(BigInteger.ONE).multiply(numberQ.subtract(BigInteger.ONE));
+		}
+		
+	public static BigInteger calculateModulus(BigInteger numberP, BigInteger numberQ){
+		return numberP.multiply(numberQ);
+		}
+		
+	//Returns public key in the form (e,modulus)
+	public static String getPublicKey(){
+		return "Private Key Exponent: " + e.toString() +"\nModulus: "+ modulus.toString() + ")";
+		}
+		
+	//Returns private key
+	public static String getPrivateKey(){
+		return privateKey.toString();
+		}
+		
+	//Generates public key AND private key
+	public static String generateKeyPair(){
+		return "Public Key: \n" + getPublicKey() +"\n" +"Private Key: " + getPrivateKey();
+		}
+	//Second attempt at encrypting image
+	public static byte[] encryptImage(byte[] image){
+		byte [] encryptedImage = new byte[image.length];		
+			
+		//encrypting every single byte of image
+		//This actually takes alot of time...so i'm going to try to rethink this lol
+		//Possible problem: could this be a problem of how i am trying to encrypt an 8 bit input using 1024 key?
+		//Possible problem: when i print out the big integers, some are negative? from what i understand RSA cannot work on negative values right?
+		for(int i = 0; i < image.length;i++){
+			BigInteger byteToBigInteger = BigInteger.valueOf(image[i]);
+			//System.out.println(byteToBigInteger.toString()); 
+			encryptedImage[i] = (byteToBigInteger).modPow(e,modulus).byteValue();
+				
+		}
+		return encryptedImage;
+	}
+	
+	public static byte[] encryptImage2(byte[] image){
+		BigInteger imageBigInt = new BigInteger(image);
+		return (imageBigInt.modPow(e,modulus)).toByteArray();
 	}
 	
 	//Returns the bytes of image input
@@ -249,9 +248,9 @@ public class RSA {
 	
 	//Converts buffered image to byte array
 	public static byte[] bufferToByte(BufferedImage image, String format) throws IOException{
-		    ByteArrayOutputStream input = new ByteArrayOutputStream();
-	        ImageIO.write(image, format, input);
-	        return input.toByteArray();
+		 ByteArrayOutputStream input = new ByteArrayOutputStream();
+	     ImageIO.write(image, format, input);
+	     return input.toByteArray();
 	}
 	
 	//This splits the original image into smaller images 
