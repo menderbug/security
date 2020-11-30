@@ -44,16 +44,11 @@ public class RSA {
 	   	random = new Random();
 	    p = getPrime(keyLength,random);
 	    q = getPrime(keyLength,random);
-
-<<<<<<< Updated upstream
 	    modulus = calculateModulus(p,q); //n, part of public key
 		phi = calculatePhi(p,q);
 
 		e = getPrime(keyLength,random);
 		e = exponentCheck(e, p, modulus); // public key exponent
-		privateKey = e.modInverse(phi); // d
-  	}
-=======
 	   //Choose d such that ed mod phi(n) = 1
 	   //Use checkPrivateKey to test that this is true
 	   privateKey = e.modInverse(phi); //d
@@ -66,9 +61,8 @@ public class RSA {
 	   random = new Random(seed);
 	   p = BigInteger.probablePrime(keyLength/2, random);
 	   q = BigInteger.probablePrime(keyLength/2, random);
->>>>>>> Stashed changes
-
-	   //Creating modulus = pq such that phi(modulus) = (p-1)(q-1)
+	
+	   //Creating modulus = pq such that phi(modulus) = (p-1)(q-1) 
 	   // (e,modulus) is the public key
 	   modulus = p.multiply(q); //n
 	   phi = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
@@ -93,9 +87,13 @@ public class RSA {
 		String decrypt = decrypt(encrypt);
 		System.out.println("original message in plaintext: " + plainText);
 		System.out.println("encrypted message: " + encrypt.toString());
-		System.out.println("decrypted message in plaintext: "+ decrypt.toString());
+		System.out.println("decrypted message in plaintext: "+ decrypt);
 
 
+		System.out.println("encrypted message: " + encrypt);
+		System.out.println("decrypted message in plaintext: "+ decrypt);
+		
+		/*
 		//Third attempt for image encryption
 		//Uses splitImage and encryptImage2 methods
 		//Splitting original into smaller images, attempting to encrypt these smaller images
@@ -125,6 +123,9 @@ public class RSA {
 
 		/*First attempt for image encryption starts here*/
 		//File i/o for the duck and the encrypted image
+		
+		/*First attempt for image encryption starts here
+		//File i/o for the duck and the encrypted image*/
 		FileInputStream originalImage =  new FileInputStream("happyduck.jpg");
 		FileOutputStream encryptedImageFile = new FileOutputStream("encryptedhappyduck.jpg");
 		byte[] buffer = new byte[256];
@@ -188,21 +189,6 @@ public class RSA {
 
 	}
 
-
-	//Encryption method for Strings
-	public static BigInteger encrypt(String message){
-		BigInteger messageBytes = new BigInteger(message.getBytes());
-		return messageBytes.modPow(e,modulus);
-
-	}
-
-	//Decryption method for Strings
-	public static String decrypt(BigInteger message){
-		BigInteger decrypt = message.modPow(privateKey,modulus);
-		return new String (decrypt.toByteArray());
-
-		}
-
 	//Checks that private key is correct
 	//Should return e(privateKey)mod(phi) = 1
 	public static BigInteger checkPrivateKey(BigInteger numberE, BigInteger numberD, BigInteger numberP){
@@ -239,14 +225,10 @@ public class RSA {
 	//Returns private key
 	public static String getPrivateKey(){
 		return privateKey.toString();
-		}
+   }
 
 	//Generates public key AND private key
 	public static String generateKeyPair(){
-<<<<<<< Updated upstream
-		return "Public Key: \n" + getPublicKey() +"\n" +"Private Key: " + getPrivateKey();
-		}
-=======
 		return "Public Key: " + getPublicKey() +"\n" +"Private Key: " + getPrivateKey();
 	}
 
@@ -259,8 +241,6 @@ public class RSA {
 	public static BigInteger encryptBigInteger(BigInteger b) {
 		return b.modPow(e, modulus);
 	}
-
->>>>>>> Stashed changes
 	//Second attempt at encrypting image
 	public static byte[] encryptImage(byte[] image){
 		byte [] encryptedImage = new byte[image.length];
@@ -283,8 +263,9 @@ public class RSA {
 		return (imageBigInt.modPow(e,modulus)).toByteArray();
 	}
 
-<<<<<<< Updated upstream
-=======
+
+
+
 	//Decryption method for Strings
 	public static String decrypt(BigInteger message){
 		BigInteger decrypt = message.modPow(privateKey,modulus);
@@ -296,7 +277,6 @@ public class RSA {
 		return b.modPow(privateKey,modulus);
 	}
 
->>>>>>> Stashed changes
 	//Returns the bytes of image input
 	public static byte[] getImageBytes(String path) throws IOException {
 		BufferedImage original = ImageIO.read(new File (path));
@@ -353,7 +333,17 @@ public class RSA {
 		return smallerImages;
 	}
 
+	public static byte[] hexStringToByteArray(String s) {
+		int len = s.length();
+		byte[] data = new byte[len / 2];
+		for (int i = 0; i < len; i += 2) {
+			data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+					+ Character.digit(s.charAt(i+1), 16));
+		}
+		return data;
+	}
 
+	
 	/* Nested class for testing only */
 	@SuppressWarnings("serial")
 	private class DisplayImage extends JFrame {
