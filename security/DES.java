@@ -83,7 +83,17 @@ public class DES {
                                                 7, 62, 54, 46, 38, 30, 22,
                                                 14, 6, 61, 53, 45, 37, 29,
                                                 21, 13, 5, 28, 20, 12, 4};
-    private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
+    private static final int[] PC1 = {
+            57, 49, 41, 33, 25, 17, 9,
+            1,  58, 50, 42, 34, 26, 18,
+            10, 2,  59, 51, 43, 35, 27,
+            19, 11, 3,  60, 52, 44, 36,
+            63, 55, 47, 39, 31, 23, 15,
+            7,  62, 54, 46, 38, 30, 22,
+            14, 6,  61, 53, 45, 37, 29,
+            21, 13, 5,  28, 20, 12, 4
+        };    
+private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
                                             3, 28, 15, 6, 21, 10,
                                             23, 19, 12, 4, 26, 8,
                                             16, 7, 27, 20, 13, 2,
@@ -139,7 +149,6 @@ public class DES {
 
     //TODO: write decrypt method
     public static String decrypt(String decryptText, String userkey) {
-        System.out.println(decryptText.length() + " DECRYPT TEXT");
     	BitSet[] blockStrings = stringTo64Bits(decryptText);
         BitSet decryptedbits = new BitSet();
         BitSet inputkey = convertStringToBitSet(userkey);
@@ -152,7 +161,6 @@ public class DES {
          	BitSet bit = permutation(blockStrings[index],inverseipbox); //inverse permutation
          	//runs 16 rounds on each 64 bit group
          	while(iteration>-1) {   
-         		System.out.println(iteration + " IN DECRYPT");
                  bit = reverseRound(bit);   
               }
          	
@@ -265,7 +273,6 @@ public class DES {
      */
     private static BitSet f(BitSet input) {
         BitSet bits = permutation(input, ebox);
-        System.out.println(iteration);
         bits.xor(subKeys[iteration]);
         bits = sboxTransform(bits,sbox);
         bits = permutation(bits,pbox);
@@ -326,7 +333,9 @@ public class DES {
      */
     private static BitSet[] generateSubkeys(BitSet bits){
     	BitSet[] generatedsubKeys = new BitSet[16];
-    	
+    	bits = permutation(bits, PC1);
+    	System.out.println(convertBitSetToString(bits,1).length() + " AFTER PERMUTATION CHOISE 1 (56)");
+
     	for(int i = 0; i<16; i++) {
     		//left side is the first 28 bits
             BitSet Left = new BitSet();

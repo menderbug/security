@@ -40,7 +40,7 @@ public class GUI extends Application {
 		
 		//DES Implementation
 		TextArea DESInput = new TextArea("Unless I had been animated by an almost supernatural enthusiasm, my application to this study would have been irksome");
-		TextArea DESKey = new TextArea(DES.convertBitsToText(DES.generateKey(), 1));
+		TextArea DESKey = new TextArea(DES.convertBitSetToString(DES.generateKey(),1));
 		String encryptedtext  = DES.encrypt(DESInput.getText());
 		TextArea DESEncyptedText = new TextArea(encryptedtext);
 		TextArea DESDecryptedText = new TextArea(DES.decrypt(encryptedtext,DESKey.getText()));
