@@ -95,18 +95,15 @@ public class DES {
 
     private BitSet key;
     private BitSet[] subKeys;
-    private int iteration;
 
     public DES() {
-        new DES(generateKey());
+        this(generateKey());
     }
 
-    public DES(BitSet key) {
-        this.iteration = 0;
-        this.key = key;
+    public DES(BitSet bitKey) {
+        this.key = bitKey;
         this.subKeys = generateSubkeys(this.key);
     }
-    
 
     public BitSet encrypt(String encryptText) {
         BitSet[] blockStrings = this.stringTo64Bits(encryptText);
@@ -117,7 +114,7 @@ public class DES {
 
         	//runs 16 rounds on each 64 bit group
         	for(int iter=0; iter<16; iter++) {
-                currentBits = this.round(currentBits);
+                currentBits = this.round(currentBits, iter);
              }
             currentBits = permutation(currentBits, inverseipbox); //inverse permutation
             this.combineBitSets(encryptedBits, currentBits, (index + 1) * 64);
@@ -140,7 +137,7 @@ public class DES {
             BitSet bit = reversePermutation(blockStrings[index],inverseipbox); //inverse permutation
             //runs 16 rounds on each 64 bit group
             for(int iter=0; iter<16; iter++) {
-                bit = reverseRound(bit);
+                bit = reverseRound(bit, iter);
             }
 
             bit = reversePermutation(bit, ipbox); //initial permutation
@@ -152,7 +149,7 @@ public class DES {
         }
 
         //converts bits to text and returns text output
-        return this.bitsToString(decryptedbits, blockStrings.length);
+        return this.bitsetToText(decryptedbits, blockStrings.length);
     }
 
     /**
@@ -175,7 +172,7 @@ public class DES {
      *             represent the right value.
      * @return a BitSet where the left and right are
      */
-    private BitSet round(BitSet bits){
+    private BitSet round(BitSet bits, int iteration){
         //initially, left side is the first 32 bits
         BitSet initialLeft = new BitSet();
         bits.stream().filter(a -> a < 32).forEach(initialLeft::set);
@@ -185,15 +182,14 @@ public class DES {
         bits.stream().filter(a -> a >= 32).forEach(a -> initialRight.set(a - 32));
 
         //Create new BitSet to store the value of f function of initialRight, xor-ed with initialLeft
-        BitSet newRight = this.f(initialRight);
+        BitSet newRight = this.f(initialRight, iteration);
         newRight.xor(initialLeft);
 
         //finalValue's first 32 bits are the initialRight value
         //Set the last 32 bits of finalValue to the values of newRight
+        BitSet finalValue = this.combineBitSets(initialRight, newRight, 32);
 
-
-        this.iteration++;
-        return initialRight;
+        return finalValue;
     }
 
     /**
@@ -201,7 +197,7 @@ public class DES {
      * @param bits
      * @return
      */
-    private BitSet reverseRound(BitSet bits) {
+    private BitSet reverseRound(BitSet bits, int iteration) {
         //The first 32-bits of an output block are right-most 32 bits of the original input block
         BitSet initialRight = new BitSet();
         bits.stream().filter(a -> a < 32).forEach(initialRight::set);
@@ -211,10 +207,9 @@ public class DES {
         bits.stream().filter(a -> a >= 32).forEach(a -> decodeRight.set(a - 32));
 
         //finalValue is first set to the value of the initialRight after it goes through the f-function; after xor-ing this value with the right-most 32 bits of the argument, it should produce the initial left value
-        BitSet finalValue = this.f(initialRight);
+        BitSet finalValue = this.f(initialRight, iteration);
         finalValue.xor(decodeRight);
-        this.combineBitSets(decodeRight, initialRight, 32);
-        this.iteration--;
+        finalValue = this.combineBitSets(finalValue, initialRight, 32);
 
         return finalValue;
     }
@@ -249,10 +244,10 @@ public class DES {
     /**
      * f function in the DES algorithm, which applies a 48-bit key to the right 32 bits to produce a 32 bit output
      */
-    private BitSet f(BitSet input) {
+    private BitSet f(BitSet input, int iteration) {
         BitSet bits = permutation(input, ebox);
-        System.out.println(this.iteration + " ITERATION");
-        bits.xor(subKeys[this.iteration]);
+        System.out.println(iteration + " ITERATION");
+        bits.xor(this.subKeys[iteration]);
         bits = sboxTransform(bits,sbox);
         bits = permutation(bits,pbox);
         
@@ -262,9 +257,9 @@ public class DES {
     /**
      * Performs f function in reverse order for decoding
      */
-    private BitSet reverseF(BitSet input) {
-        BitSet bits = reverseSBoxTransform(input, sbox[this.iteration]);
-        bits.xor(subKeys[this.iteration]);
+    private BitSet reverseF(BitSet input, int iteration) {
+        BitSet bits = reverseSBoxTransform(input, sbox[iteration]);
+        bits.xor(subKeys[iteration]);
         return bits;
     }
 
@@ -384,7 +379,9 @@ public class DES {
             String binaryValue = Integer.toBinaryString(c);
             //add leading zeroes to numbers that have fewer than 8 bits
             if (binaryValue.length() < 8) {
-                //sbr.append("0".repeat(8 - binaryValue.length()));
+                for(int i = 0; i < (8 - binaryValue.length()); i++) {
+                    sbr.append('0');
+                }
             }
             sbr.append(binaryValue);
         }
@@ -396,21 +393,38 @@ public class DES {
         return bitset;
     }
 
+    public String keyToNums() {
+        String binaryString = bitsetToString(this.key, 64);
+        StringBuilder sbr = new StringBuilder();
+        for(int i = 0; i < 8; i++) {
+            sbr.append(Integer.parseInt(binaryString.substring(i * 8, (i+1) * 8), 2) + " ");
+        }
+        return sbr.toString();
+    }
+
     /**
-     * Converts a BitSet back into a String (must be ASCII encoded)
+     * Converts a BitSet back into a String of alphabetical values (must be ASCII encoded)
      * Precondition: bitset is a 64 bit BitSet
      * @param bitset
      * @return
      */
-    private String bitsToString(BitSet bitset, int blockSize) {
-        StringBuilder binary = new StringBuilder("0".repeat(blockSize));
-        bitset.stream().forEach(a -> binary.setCharAt(a, '1'));
+    private String bitsetToText(BitSet bitset, int blockSize) {
+        String binary = bitsetToString(bitset, blockSize);
         int index = 0;
         StringBuilder overallString = new StringBuilder();
         while(index < binary.length()) {
             overallString.append((char) Integer.parseInt(binary.substring(index, index += 8), 2));
         }
         return overallString.toString();
+    }
+
+    public static String bitsetToString(BitSet bitset, int size) {
+        StringBuilder sbr = new StringBuilder();
+        for(int i = 0; i < size; i++) {
+            sbr.append('0');
+        }
+        bitset.stream().forEach(a -> sbr.setCharAt(a, '1'));
+        return sbr.toString();
     }
 
     private BitSet combineBitSets(BitSet bitsetLeft, BitSet bitsetRight, int offset) {
