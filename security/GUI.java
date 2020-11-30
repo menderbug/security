@@ -43,24 +43,30 @@ public class GUI extends Application {
 
 		//DES Implementation
 		TextArea DESInput = new TextArea("Unless I had been animated by an almost supernatural enthusiasm, my application to this study would have been irksome");
+
 		TextArea DESKey = new TextArea(des.keyToNums());
 		BitSet encryptedDES = des.encrypt(DESInput.getText());
-		TextArea DESOutput = new TextArea(des.bitsetToString(encryptedDES, encryptedDES.length()));
+		TextArea DESEncryptedText = new TextArea(des.bitsetToString(encryptedDES, encryptedDES.length()));
+
+		TextArea DESDecryptedText = new TextArea(des.decrypt(DES.bitsetToString(encryptedDES, encryptedDES.length()),DESKey.getText()));
 
 		TextArea rsaInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea rsaKey = new TextArea(RSA.getPublicKey());
 		TextArea rsaOutput = new TextArea(RSA.encrypt(rsaInput.getText()).toString());
 
-		board.add(new TextField("Vigenere Encryption"), 0, 0, 3, 1);
+		
+		board.add(new TextField("Vigenere Encryption"), 0, 0, 4, 1);
 		board.add(new TextField("Text"), 0, 1);
 		board.add(new TextField("Key"), 1, 1);
 		board.add(new TextField("Encrypted Text"), 2, 1);
-
-		board.add(new TextField("DES Encryption"), 0, 3, 3, 1);
+		
+		board.add(new TextField("DES Encryption"), 0, 3, 5, 1);
 		board.add(new TextField("Text"), 0, 4);
 		board.add(new TextField("Key"), 1, 4);
 		board.add(new TextField("Encrypted Text"), 2, 4);
+		board.add(new TextField("Decrypted Text"), 0, 6);
 
+		
 		/*
 		board.add(new TextField("RSA Encryption"), 0, 3, 3, 1);
 		board.add(new TextField("Text"), 0, 4);
@@ -73,10 +79,12 @@ public class GUI extends Application {
 
 		board.add(DESInput, 0, 5);
 		board.add(DESKey, 1, 5);
-		board.add(DESOutput, 2, 5);
-		/*
-		board.add(rsaInput, 0, 5);
-		board.add(rsaKey, 1, 5);
+
+		board.add(DESEncryptedText, 2, 5);
+		board.add(DESDecryptedText, 0, 7);
+		
+		/*board.add(rsaInput, 0, 5);
+		board.add(rsaKey, 1, 5);	
 		board.add(rsaOutput, 2, 5);
 		*/
 		board.getChildren().forEach(n -> {if (n instanceof TextField) ((TextField) n).setEditable(false);});
