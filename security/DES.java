@@ -140,7 +140,7 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
     }
 
     //TODO: write decrypt method
-    public static String decrypt(String decryptText, String userkey) {
+    public String decrypt(String decryptText, String userkey) {
     	BitSet[] blockStrings = stringTo64Bits(decryptText);
     	BitSet decryptedbits = new BitSet();
         BitSet inputkey = stringToBitSet(userkey);
@@ -153,7 +153,8 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
          	BitSet bit = permutation(blockStrings[index],inverseipbox); //inverse permutation
          	//runs 16 rounds on each 64 bit group
          	while(iteration>-1) {   
-                 bit = reverseRound(bit);   
+                 bit = reverseRound(bit, iteration);
+                 iteration--;
               }
          	
          	bit = permutation(bit, ipbox); //initial permutation
@@ -324,7 +325,6 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
     private BitSet[] generateSubkeys(BitSet bits){
     	BitSet[] generatedsubKeys = new BitSet[16];
     	bits = permutation(bits, PC1);
-    	System.out.println(convertBitSetToString(bits,1).length() + " AFTER PERMUTATION CHOISE 1 (56)");
 
     	for(int i = 0; i<16; i++) {
     		//left side is the first 28 bits
