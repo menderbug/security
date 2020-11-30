@@ -49,19 +49,19 @@ public class GUI extends Application {
 		TextArea rsaKey = new TextArea(RSA.getPublicKey());
 		TextArea rsaOutput = new TextArea(RSA.encrypt(rsaInput.getText()).toString());
 
-		
+
 		board.add(new TextField("Vigenere Encryption"), 0, 0, 4, 1);
 		board.add(new TextField("Text"), 0, 1);
 		board.add(new TextField("Key"), 1, 1);
 		board.add(new TextField("Encrypted Text"), 2, 1);
-		
+
 		board.add(new TextField("DES Encryption"), 0, 3, 5, 1);
 		board.add(new TextField("Text"), 0, 4);
 		board.add(new TextField("Key"), 1, 4);
 		board.add(new TextField("Encrypted Text"), 2, 4);
 		board.add(new TextField("Decrypted Text"), 0, 6);
 
-		
+
 		/*
 		board.add(new TextField("RSA Encryption"), 0, 3, 3, 1);
 		board.add(new TextField("Text"), 0, 4);
@@ -77,9 +77,9 @@ public class GUI extends Application {
 
 		board.add(DESEncryptedText, 2, 5);
 		board.add(DESDecryptedText, 0, 7);
-		
+
 		/*board.add(rsaInput, 0, 5);
-		board.add(rsaKey, 1, 5);	
+		board.add(rsaKey, 1, 5);
 		board.add(rsaOutput, 2, 5);
 		*/
 		board.getChildren().forEach(n -> {if (n instanceof TextField) ((TextField) n).setEditable(false);});

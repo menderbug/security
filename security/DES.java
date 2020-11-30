@@ -115,29 +115,6 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         this.subKeys = generateSubkeys(this.key);
     }
 
-    public static void main(String[] args) {
-        DES des = new DES();
-        System.out.println(des.keyToNums());
-        String encryptText = "Hellowor";
-        BitSet encrypted = des.encrypt(encryptText);
-        encrypted.stream().forEach(a -> System.out.print(a + " "));
-
-
-
-//        BitSet[] blockStrings = des.stringTo64Bits(encryptText);
-//        System.out.println(bitsetToString(blockStrings[0], 64) );
-//        int index = 0;
-//        //runs through each set of 64 bits in BlockString
-//        BitSet encryptedBits = new BitSet();
-//        BitSet currentBits = des.permutation(blockStrings[index],ipbox); //inital permutation
-//
-//        //runs 16 rounds on each 64 bit group
-//        for(int iter=0; iter<16; iter++) {
-//            currentBits = des.round(currentBits, iter);
-//        }
-
-    }
-
     public BitSet encrypt(String encryptText) {
         BitSet[] blockStrings = this.stringTo64Bits(encryptText);
 
@@ -158,18 +135,32 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
     }
 
     /**
-     * takes in a string for input from user
+     * Decrypts text from either a number string or a binary string, anything else will result in a failure
      * @param decryptText
-     * @param userkey
+     * @param userKey
      * @return
      */
 
     public String decrypt(String decryptText, String userKey) {
+        BitSet[] blockStrings;
+        if(this.isBinary(decryptText)) {
+            blockStrings = this.bitSetToArray(stringToBitSet(decryptText));
+        } else if(this.isNums(decryptText)) {
+            blockStrings = this.bitSetToArray(numsToBitSet(decryptText));
+        } else {
+            return "This text cannot be decrypted. Value must be numeric or binary";
+        }
 
-//    	BitSet[] blockStrings = this.bitSetToArray(stringToBitSet(decryptText));]
-        BitSet[] blockStrings = this.bitSetToArray(this.numsToBitSet(decryptText));
-        BitSet inputKey = stringToBitSet(userKey);
-        return this.decrypt(blockStrings, inputKey);
+        BitSet key = new BitSet();
+        if(this.isBinary(userKey)) {
+            key = stringToBitSet(userKey);
+        } else if (this.isNums(userKey)) {
+            key = numsToBitSet(userKey);
+        } else {
+            return "This key cannot be used. Value must be numeric or binary";
+        }
+
+        return this.decrypt(blockStrings, key);
     }
 
     /**
@@ -200,7 +191,7 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
             decryptedBits = this.combineBitSets(decryptedBits, bit, (index + 1) * 64);
         }
         //converts bits to text and returns text output
-        return this.translateBitsetToText(decryptedBits, 64);
+        return this.translateBitsetToText(decryptedBits, decryptedBits.length() + (8 - decryptedBits.length() % 8));
     }
 
     /**
@@ -308,7 +299,7 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
      * Performs f function in reverse order for decoding
      */
     private BitSet reverseF(BitSet input, int iteration) {
-        BitSet bits = reverseSBoxTransform(input, sbox[iteration]);
+        BitSet bits = sboxTransform(input, sbox);
         bits.xor(subKeys[iteration]);
         return bits;
     }
@@ -347,10 +338,6 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
 				aftersbox.set(i);
 		}
 		return aftersbox;
-    }
-
-    private BitSet reverseSBoxTransform(BitSet bits, int[] sbox) {
-        return new BitSet();
     }
 
     /**
@@ -514,10 +501,13 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
      * @return
      */
 	private BitSet[] bitSetToArray(BitSet bits) {
-        BitSet[] outputBits = new BitSet[(bits.length() / 8) + 1];
+	    int arraySize = (int) Math.ceil((double) bits.length() / 64);
+        BitSet[] outputBits = new BitSet[arraySize];
         for(int i = 0; i < outputBits.length; i++) {
             int current = i;
-            bits.stream().forEach(a -> outputBits[current].set(a - (current * 8)));
+            BitSet currentBits = new BitSet();
+            bits.stream().filter(a -> a >= current * 64 && a < (current + 1) * 64).forEach(a -> currentBits.set(a - (current * 64)));
+            outputBits[current] = currentBits;
         }
         return outputBits;
     }
@@ -538,6 +528,26 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
             }
         }
         return bits;
+    }
+
+    //utility method to check if a string is numeric
+    private boolean isNums(String str) {
+        for(char c : str.toCharArray()) {
+            if(!Character.isDigit(c) && c != ' ') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //utility method to check if a string is binary
+    private boolean isBinary(String str) {
+        for(char c : str.toCharArray()) {
+            if (c != '1' && c != '0' && c != ' ') {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
