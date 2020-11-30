@@ -45,6 +45,7 @@ public class RSA {
 	    p = getPrime(keyLength,random);
 	    q = getPrime(keyLength,random);
 	   
+<<<<<<< Updated upstream
 	    modulus = calculateModulus(p,q); //n, part of public key
 		phi = calculatePhi(p,q);
 		
@@ -52,12 +53,37 @@ public class RSA {
 		e = exponentCheck(e, p, modulus); // public key exponent
 		privateKey = e.modInverse(phi); // d	
   	}	
+=======
+	   //Choose d such that ed mod phi(n) = 1
+	   //Use checkPrivateKey to test that this is true
+	   privateKey = e.modInverse(phi); //d
+   }
+
+   //Constructor to specify a seed
+   public RSA(long seed) {
+		
+	   //Choosing two large prime numbers p, q
+	   random = new Random(seed);
+	   p = BigInteger.probablePrime(keyLength/2, random); 
+	   q = BigInteger.probablePrime(keyLength/2, random);
+>>>>>>> Stashed changes
 	
+	   //Creating modulus = pq such that phi(modulus) = (p-1)(q-1) 
+	   // (e,modulus) is the public key
+	   modulus = p.multiply(q); //n
+	   phi = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)); 
+	   e =  BigInteger.probablePrime(keyLength/2, random); 
+	   e = exponentCheck(e,phi,modulus);
+	   
+	   //Choose d such that ed mod phi(n) = 1
+	   //Use checkPrivateKey to test that this is true
+	   privateKey = e.modInverse(phi); //d
+   }
    //Everything in Main is for testing purposes
    //Will delete once we figure out tf how to encrypt the images :(
 	public static void main(String[] args) throws IOException {
 		
-        RSA test = new RSA();
+        RSA test = new RSA(3);
 		
 		//Testing string encryption/decryption
 		//Uses encrypt and decrypt methods
@@ -97,7 +123,7 @@ public class RSA {
 		encryptedImageFile.close();
 		*/
 		
-		/*First attempt for image encryption starts here
+		/*First attempt for image encryption starts here*/
 		//File i/o for the duck and the encrypted image
 		FileInputStream originalImage =  new FileInputStream("happyduck.jpg");
 		FileOutputStream encryptedImageFile = new FileOutputStream("encryptedhappyduck.jpg");
@@ -106,16 +132,20 @@ public class RSA {
 		
 		//Testing whether or not the BigIntegers are equal to each other
 		//TODO delete "test" after figuring wtf is going on with the encryption
-		while(originalImage.read(buffer) != -1) {
+		originalImage.read(buffer);
 			BigInteger testOrig = new BigInteger(buffer);
-			BigInteger testEnc = test.encrypt(testOrig);
-			BigInteger testDec = test.decrypt(testEnc);
+			BigInteger testEnc = test.encryptBigInteger(testOrig);
+			BigInteger testDec = test.decryptBigInteger(testEnc);
+			
+			System.out.println("Original BigInteger: " + testOrig.toString());
+			System.out.println("Encrypted BigInteger: " + testEnc.toString());
+			System.out.println("Decrypted BigInteger: " + testDec.toString());
 			
 			System.out.println(testOrig.equals(testDec));
 			
-			encryptedImageFile.write(test.encrypt(new BigInteger(buffer)).toByteArray());
+			encryptedImageFile.write(test.encryptBigInteger(new BigInteger(buffer)).toByteArray());
 			
-		}
+		
 		originalImage.close();
 		encryptedImageFile.close();
 		
@@ -213,8 +243,24 @@ public class RSA {
 		
 	//Generates public key AND private key
 	public static String generateKeyPair(){
+<<<<<<< Updated upstream
 		return "Public Key: \n" + getPublicKey() +"\n" +"Private Key: " + getPrivateKey();
 		}
+=======
+		return "Public Key: " + getPublicKey() +"\n" +"Private Key: " + getPrivateKey();
+	}
+	
+	//Encryption method for Strings
+	public static BigInteger encrypt(String message){
+		BigInteger messageBytes = new BigInteger(message.getBytes());
+		return messageBytes.modPow(e,modulus);
+	}
+	
+	public static BigInteger encryptBigInteger(BigInteger b) {
+		return b.modPow(e, modulus);
+	}
+	
+>>>>>>> Stashed changes
 	//Second attempt at encrypting image
 	public static byte[] encryptImage(byte[] image){
 		byte [] encryptedImage = new byte[image.length];		
@@ -237,6 +283,20 @@ public class RSA {
 		return (imageBigInt.modPow(e,modulus)).toByteArray();
 	}
 	
+<<<<<<< Updated upstream
+=======
+	//Decryption method for Strings
+	public static String decrypt(BigInteger message){
+		BigInteger decrypt = message.modPow(privateKey,modulus);
+		return new String (decrypt.toByteArray());
+	    
+	}
+	
+	public static BigInteger decryptBigInteger(BigInteger b) {
+		return b.modPow(privateKey,modulus);
+	}
+	
+>>>>>>> Stashed changes
 	//Returns the bytes of image input
 	public static byte[] getImageBytes(String path) throws IOException {
 		BufferedImage original = ImageIO.read(new File (path));
