@@ -139,34 +139,44 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         return new BitSet();
     }
 
-    //TODO: write decrypt method
+    /**
+     * takes in a string for input from user
+     * @param decryptText
+     * @param userkey
+     * @return
+     */
+
     public String decrypt(String decryptText, String userkey) {
-    	BitSet[] blockStrings = stringTo64Bits(decryptText);
-    	BitSet decryptedbits = new BitSet();
-        BitSet inputkey = stringToBitSet(userkey);
-        generateSubkeys(inputkey);
+
+//    	BitSet[] blockStrings = this.bitSetToArray(stringToBitSet(decryptText));]
+        BitSet[] blockStrings = this.bitSetToArray(this.numsToBitSet(decryptText));
+    	BitSet decryptedBits = new BitSet();
+        BitSet inputKey = stringToBitSet(userkey);
+        if(!inputKey.isEmpty()) {
+            generateSubkeys(inputKey);
+        } else {
+            return "Invalid DES key.";
+        }
         int iteration = 15;
-        
-         
+
+
          //runs through each set of 64 bits in BlockString
          for(int index = 0; index<blockStrings.length; index++) {
          	BitSet bit = permutation(blockStrings[index],inverseipbox); //inverse permutation
          	//runs 16 rounds on each 64 bit group
-         	while(iteration>-1) {   
+         	while(iteration>-1) {
                  bit = reverseRound(bit, iteration);
                  iteration--;
               }
-         	
+
          	bit = permutation(bit, ipbox); //initial permutation
-         	
+
          	//adds each set of 64 encrypted bits to encryptedbits
-         	for(int i = 0; i<64; i++) {
-         		decryptedbits.set(i+(index*64), bit.get(i));
-         	}
-         	
+             this.combineBitSets(decryptedBits, bit, (index + 1) * 64);
+
          }
          //converts bits to text and returns text output
-    	return this.translateBitsetToText(decryptedbits, blockStrings.length);
+    	return this.translateBitsetToText(decryptedBits, 64);
     }
 
     /**
@@ -411,7 +421,11 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
     }
 
     public String keyToNums() {
-        String binaryString = bitsetToString(this.key, 64);
+        return bitSetToNums(this.key, 64);
+    }
+
+    public String bitSetToNums(BitSet bits, int size) {
+        String binaryString = bitsetToString(bits, size);
         StringBuilder sbr = new StringBuilder();
         for(int i = 0; i < 8; i++) {
             sbr.append(Integer.parseInt(binaryString.substring(i * 8, (i+1) * 8), 2) + " ");
@@ -419,9 +433,18 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         return sbr.toString();
     }
 
+    public BitSet numsToBitSet(String nums) {
+        String[] numbers = nums.split(" ");
+        BitSet output = new BitSet();
+        for(int i = 0; i < numbers.length; i++) {
+            BitSet currentBits = stringToBitSet(Integer.toBinaryString(Integer.parseInt(numbers[i])));
+            this.combineBitSets(output, currentBits, i * 8);
+        }
+        return output;
+    }
+
     /**
      * Converts a BitSet back into a String of alphabetical values (must be ASCII encoded)
-     * Precondition: bitset is a 64 bit BitSet
      * @param bitset
      * @return
      */
@@ -435,7 +458,13 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         return overallString.toString();
     }
 
-    public static String bitsetToString(BitSet bitset, int size) {
+    /**
+     * Converts a bitset directly to string, as a String of 1's and 0's
+     * @param bitset
+     * @param size
+     * @return
+     */
+     static String bitsetToString(BitSet bitset, int size) {
         StringBuilder sbr = new StringBuilder();
         for(int i = 0; i < size; i++) {
             sbr.append('0');
@@ -444,17 +473,41 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         return sbr.toString();
     }
 
+    //Combines two bitsets along with the offset between them, so bitsetRight will be appended after bitsetLeft
+    //where offset is measured from the beginning of bitsetLeft
     private BitSet combineBitSets(BitSet bitsetLeft, BitSet bitsetRight, int offset) {
         bitsetRight.stream().forEach(a -> bitsetLeft.set(a + offset));
         return bitsetLeft;
 	}
-    
+
+    /**
+     * Converts the input bits into an array of BitSets, each BitSet with 64 bits.
+     * @param bits
+     * @return
+     */
+	private BitSet[] bitSetToArray(BitSet bits) {
+        BitSet[] outputBits = new BitSet[(bits.length() / 8) + 1];
+        for(int i = 0; i < outputBits.length; i++) {
+            int current = i;
+            bits.stream().forEach(a -> outputBits[current].set(a - (current * 8)));
+        }
+        return outputBits;
+    }
     
     static BitSet stringToBitSet(String str) {
         BitSet bits = new BitSet();
+        int spaces = 0;
         for(int i = 0; i < str.length(); i++) {
+            int position = i - spaces;
             if(str.charAt(i) == '1')
-                bits.set(i);
+                bits.set(position);
+            else if (str.charAt(i) == ' ') {
+                spaces++;
+            } else if (str.charAt(i) == '0') {
+                //do nothing
+            } else {
+                return new BitSet();
+            }
         }
         return bits;
     }

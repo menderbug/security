@@ -8,8 +8,6 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
-import java.util.BitSet;
-
 public class GUI extends Application {
 
 	private GridPane board = new GridPane();
@@ -43,10 +41,10 @@ public class GUI extends Application {
 
 		//DES Implementation
 		TextArea DESInput = new TextArea("Unless I had been animated by an almost supernatural enthusiasm, my application to this study would have been irksome");
-		TextArea DESKey = new TextArea(DES.convertBitSetToString(DES.generateKey(),1));
-		String encryptedtext  = DES.encrypt(DESInput.getText());
-		TextArea DESEncyptedText = new TextArea(encryptedtext);
-		TextArea DESDecryptedText = new TextArea(DES.decrypt(encryptedtext,DESKey.getText()));
+		TextArea DESKey = new TextArea(des.keyToNums());
+		String encryptedtext  = DES.bitsetToString(des.encrypt(DESInput.getText()), DESInput.getText().length() * 8);
+		TextArea DESEncryptedText = new TextArea(encryptedtext);
+		TextArea DESDecryptedText = new TextArea(des.decrypt(encryptedtext,DESKey.getText()));
 		TextArea rsaInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea rsaKey = new TextArea(RSA.getPublicKey());
 		TextArea rsaOutput = new TextArea(RSA.encrypt(rsaInput.getText()).toString());
