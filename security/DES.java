@@ -134,7 +134,7 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         	//runs 16 rounds on each 64 bit group
         	for(int iter = 0; iter < 16; iter++) {
                 currentBits = this.round(currentBits, iter);
-                System.out.println("Iteration " + iter + ": " + currentBits.length());
+                //System.out.println("Iteration " + iter + ": " + currentBits.length());
              }
             currentBits = permutation(currentBits, inverseipbox); //inverse permutation
             encryptedBits = this.combineBitSets(encryptedBits, currentBits, index * 64);
