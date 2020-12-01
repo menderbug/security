@@ -115,6 +115,14 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         this.subKeys = generateSubkeys(this.key);
     }
 
+    public static void main(String[] args) {
+
+        DES des = new DES();
+        BitSet bits = des.encrypt("Helloworld");
+        System.out.println(bitsetToString(bits, (int) (Math.ceil((double) "Helloworld".length() / 8)) * 64));
+
+    }
+
     public BitSet encrypt(String encryptText) {
         BitSet[] blockStrings = this.stringTo64Bits(encryptText);
 
@@ -124,11 +132,12 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
             BitSet currentBits = permutation(blockStrings[index],ipbox); //inital permutation
 
         	//runs 16 rounds on each 64 bit group
-        	for(int iter=0; iter<16; iter++) {
+        	for(int iter = 0; iter < 16; iter++) {
                 currentBits = this.round(currentBits, iter);
+                System.out.println("Iteration " + iter + ": " + currentBits.length());
              }
             currentBits = permutation(currentBits, inverseipbox); //inverse permutation
-            encryptedBits = this.combineBitSets(encryptedBits, currentBits, (index + 1) * 64);
+            encryptedBits = this.combineBitSets(encryptedBits, currentBits, index * 64);
         }
 
         return encryptedBits;
@@ -487,10 +496,10 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
     //Combines two bitsets along with the offset between them, so bitsetRight will be appended after bitsetLeft
     //where offset is measured from the beginning of bitsetLeft
     private BitSet combineBitSets(BitSet bitsetLeft, BitSet bitsetRight, int offset) {
-         if(bitsetLeft.isEmpty()) {
-             //if the left is empty, set it to the right side and return that
-             return bitsetRight;
-         }
+        if(bitsetLeft.isEmpty()) {
+            //if the left is empty, set it to the right side and return that
+            return bitsetRight;
+        }
         bitsetRight.stream().forEach(a -> bitsetLeft.set(a + offset));
         return bitsetLeft;
 	}

@@ -40,11 +40,10 @@ public class GUI extends Application {
 		});
 
 		//DES Implementation
-		TextArea DESInput = new TextArea("Hellowor");
+		TextArea DESInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea DESKey = new TextArea(des.keyToNums());
-		String encryptedtext  = DES.bitsetToString(des.encrypt(DESInput.getText()), DESInput.getText().length() * 8);
+		String encryptedtext  = DES.bitsetToString(des.encrypt(DESInput.getText()), (int) (Math.ceil((double) DESInput.getText().length() / 8)) * 64);
 		TextArea DESEncryptedText = new TextArea(encryptedtext);
-		TextArea DESDecryptedText = new TextArea(des.decrypt(encryptedtext,DESKey.getText()));
 		TextArea rsaInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea rsaKey = new TextArea(RSA.getPublicKey());
 		TextArea rsaOutput = new TextArea(RSA.encrypt(rsaInput.getText()).toString());
@@ -76,7 +75,6 @@ public class GUI extends Application {
 		board.add(DESKey, 1, 5);
 
 		board.add(DESEncryptedText, 2, 5);
-		board.add(DESDecryptedText, 0, 7);
 
 		/*board.add(rsaInput, 0, 5);
 		board.add(rsaKey, 1, 5);
