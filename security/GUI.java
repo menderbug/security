@@ -1,5 +1,7 @@
 package security;
 
+import java.util.BitSet;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
@@ -44,8 +46,10 @@ public class GUI extends Application {
 		//DES Implementation
 		TextArea desInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea desKey = new TextArea(des.keyToNums());
-		String encryptedtext  = DES.bitsetToString(des.encrypt(desInput.getText()), (int) (Math.ceil((double) desInput.getText().length() / 8)) * 64);
-		TextArea desEncryptedText = new TextArea(encryptedtext);
+		BitSet encryptedtext  = des.encrypt(desInput.getText());
+		TextArea desEncryptedText = new TextArea(des.bitsetToString(encryptedtext,encryptedtext.length()));
+		TextArea decryptedtext = new TextArea(des.decrypt(DES.bitsetToString(encryptedtext, encryptedtext.length()),desKey.getText()));
+		
 		TextArea rsaInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea rsaKey = new TextArea(RSA.getPublicKey());
 		TextArea rsaOutput = new TextArea(RSA.encrypt(rsaInput.getText()).toString());
@@ -61,9 +65,10 @@ public class GUI extends Application {
 		vigenerePane.add(new TextField("Encrypted Text"), 2, 1);
 
 		desPane.add(new TextField("DES Encryption"), 0, 0, 5, 1);
-		desPane.add(new TextField("Decrypted Text"), 0, 1);
+		desPane.add(new TextField("Text"), 0, 1);
 		desPane.add(new TextField("Key"), 1, 1);
 		desPane.add(new TextField("Encrypted Text"), 2, 1);
+		desPane.add(new TextField("Decrypted Text"), 0, 3);
 
 		rsaPane.add(new TextField("RSA Encryption"), 0, 0, 3, 1);
 		rsaPane.add(new TextField("Text"), 0, 1);
@@ -77,6 +82,7 @@ public class GUI extends Application {
 		desPane.add(desInput, 0, 2);
 		desPane.add(desKey, 1, 2);
 		desPane.add(desEncryptedText, 2, 2);
+		desPane.add(decryptedtext, 0, 4);
 
 		rsaPane.add(rsaInput, 0, 2);
 		rsaPane.add(rsaKey, 1, 2);

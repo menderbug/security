@@ -31,6 +31,7 @@ public class DES {
       		        4,  1,  14, 8,  13, 6,  2,  11, 15, 12, 9,  7,  3,  10, 5,  0,
       		        15, 12, 8,  2,  4,  9,  1,  7,  5,  11, 3,  14, 10, 0,  6,  13
       		    }, {
+      		    	
       		        15, 1,  8,  14, 6,  11, 3,  4,  9,  7,  2,  13, 12, 0,  5,  10,
       		        3,  13, 4,  7,  15, 2,  8,  14, 12, 0,  1,  10, 6,  9,  11, 5,
       		        0,  14, 7,  11, 10, 4,  13, 1,  5,  8,  12, 6,  9,  3,  2,  15,
@@ -115,14 +116,6 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         this.subKeys = generateSubkeys(this.key);
     }
 
-    public static void main(String[] args) {
-
-        DES des = new DES();
-        BitSet bits = des.encrypt("Helloworld");
-        System.out.println(bitsetToString(bits, (int) (Math.ceil((double) "Helloworld".length() / 8)) * 64));
-
-    }
-
     public BitSet encrypt(String encryptText) {
         BitSet[] blockStrings = this.stringTo64Bits(encryptText);
 
@@ -136,6 +129,15 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
                 currentBits = this.round(currentBits, iter);
                 //System.out.println("Iteration " + iter + ": " + currentBits.length());
              }
+        	//32 bit swap
+        	BitSet Left = new BitSet();
+        	currentBits.stream().filter(a -> a < 32).forEach(Left::set);
+
+            BitSet Right = new BitSet();
+            currentBits.stream().filter(a -> a >= 32).forEach(a -> Right.set(a - 32));
+            currentBits = this.combineBitSets(Right, Left, 32);
+            
+            //inversebox 
             currentBits = permutation(currentBits, inverseipbox); //inverse permutation
             encryptedBits = this.combineBitSets(encryptedBits, currentBits, index * 64);
         }
@@ -150,7 +152,7 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
      * @return
      */
 
-    public String decrypt(String decryptText, String userKey) {
+   /*public String decrypt(String decryptText, String userKey) {
         BitSet[] blockStrings;
         if(this.isBinary(decryptText)) {
             blockStrings = this.bitSetToArray(stringToBitSet(decryptText));
@@ -170,7 +172,7 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         }
 
         return this.decrypt(blockStrings, key);
-    }
+    }*/
 
     /**
      * Internal use decrypt function that takes in an array of bits
@@ -178,29 +180,47 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
      * @param userKey DES decryption key
      * @return decrypted text
      */
-    private String decrypt(BitSet[] blockStrings, BitSet userKey) {
-        BitSet decryptedBits = new BitSet();
-        generateSubkeys(userKey);
-
-        int iteration = 15;
-
+    public String decrypt(String decryptText, String userkey) { // BitSet[] blockStrings, BitSet userKey
+    	int length = (decryptText.length()/64);
+    	if(decryptText.length()%64 !=0)
+    		length++;
+    	
+    	BitSet[] blockStrings = new BitSet[length];
+    	for(int i = 0; i < blockStrings.length; i++) {
+            blockStrings[i] = stringToBitSet(decryptText.substring(i * 64, Math.min(decryptText.length(),(i+1) * 64)));
+        }
+    	BitSet decryptedBits = new BitSet();
+        //generateSubkeys(userkey);
 
         //runs through each set of 64 bits in BlockString
         for(int index = 0; index < blockStrings.length; index++) {
-            BitSet bit = reversePermutation(blockStrings[index], inverseipbox); //inverse permutation
+        	int iteration = 15;
+        	BitSet bit = permutation(blockStrings[index],ipbox); 
             //runs 16 rounds on each 64 bit group
             while(iteration>-1) {
                 bit = reverseRound(bit, iteration);
                 iteration--;
             }
+            
+            //32 bit swap
+         	BitSet Left = new BitSet();
+            bit.stream().filter(a -> a < 32).forEach(Left::set);
 
-            bit = reversePermutation(bit, ipbox); //initial permutation
+            BitSet Right = new BitSet();
+            bit.stream().filter(a -> a >= 32).forEach(a -> Right.set(a - 32));
+            bit = this.combineBitSets(Right,Left, 32);
+
+            bit = permutation(bit, inverseipbox); //initial permutation
 
             //adds each set of 64 encrypted bits to encryptedbits
-            decryptedBits = this.combineBitSets(decryptedBits, bit, (index + 1) * 64);
+            for(int i = 0; i<64; i++) {
+         		decryptedBits.set(i+(index*64), bit.get(i));
+         	}
+            
+            decryptedBits = this.combineBitSets(decryptedBits, bit, (index) * 64);
         }
         //converts bits to text and returns text output
-        return this.translateBitsetToText(decryptedBits, decryptedBits.length() + (8 - decryptedBits.length() % 8));
+        return this.translateBitsetToText(decryptedBits, blockStrings.length*64);
     }
 
     /**
@@ -243,24 +263,21 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         return finalValue;
     }
 
-    /**
-     * When decoding, run this function to reverse what the method round() does; decrements iteration when it is finished
-     * @param bits
-     * @return
-     */
+
     private BitSet reverseRound(BitSet bits, int iteration) {
         //The first 32-bits of an output block are right-most 32 bits of the original input block
-        BitSet initialRight = new BitSet();
-        bits.stream().filter(a -> a < 32).forEach(initialRight::set);
+        BitSet Left = new BitSet();
+        bits.stream().filter(a -> a < 32).forEach(Left::set);
 
         //This stores the right-most 32 bits of the argument "bits"
-        BitSet decodeRight = new BitSet();
-        bits.stream().filter(a -> a >= 32).forEach(a -> decodeRight.set(a - 32));
+        BitSet Right = new BitSet();
+        bits.stream().filter(a -> a >= 32).forEach(a -> Right.set(a - 32));
 
         //finalValue is first set to the value of the initialRight after it goes through the f-function; after xor-ing this value with the right-most 32 bits of the argument, it should produce the initial left value
-        BitSet finalValue = this.reverseF(initialRight, iteration);
-        finalValue.xor(decodeRight);
-        finalValue = this.combineBitSets(finalValue, initialRight, 32);
+        BitSet finalValue = this.f(Right, iteration);
+        finalValue.xor(Left);
+        
+        finalValue = this.combineBitSets(Right,finalValue, 32);
 
         return finalValue;
     }
@@ -275,19 +292,7 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
     private BitSet permutation(BitSet bits, int[] box) {
         BitSet permutedBits = new BitSet();
         for(int position = 0; position < box.length; position++) {
-            permutedBits.set(position, bits.get(box[position]));
-        }
-        return permutedBits;
-    }
-
-    /**
-     * Reverses the permutation by using a permutation table and going in the reverse direction, such that
-     * bits in the new BitSet are sent back to their original location
-     */
-    private BitSet reversePermutation(BitSet bits, int[] box) {
-        BitSet permutedBits = new BitSet();
-        for(int position = 0; position < box.length; position++) {
-            permutedBits.set(box[position], bits.get(position));
+            permutedBits.set(position, bits.get(box[position]-1));
         }
         return permutedBits;
     }
@@ -303,16 +308,6 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         
         return bits;
     }
-
-    /**
-     * Performs f function in reverse order for decoding
-     */
-    private BitSet reverseF(BitSet input, int iteration) {
-        BitSet bits = sboxTransform(input, sbox);
-        bits.xor(subKeys[iteration]);
-        return bits;
-    }
-
 
     /**
      * Implements sbox on text which takes in 48 bits and reduces it to 32 bits
@@ -367,19 +362,18 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
 
             //depending on iteration value, will run the leftCircularShift method that many times(i.e. iteration = 4, run LeftCircularShift 4 times)
             BitSet rightNew = right;
-            for(int roundnum=0; roundnum<i; roundnum++) {
+            for(int roundnum=0; roundnum<i+1; roundnum++) {
                 left = leftCircularShift(left, roundnum);
                 rightNew = leftCircularShift(rightNew, roundnum);
             }
             
             //combined the left and right side into one BitSet
 
-            BitSet combined = new BitSet();
-            rightNew.stream().filter(a -> a < 28).forEach(a -> combined.set(a+28)); // adds the right side bits to BitSet combined starting at index 28
-            combined.xor(left); // adds left side bits by xor-ing with BitSet combined where combined has all 0s from index 0 to 27.
+            BitSet combined = this.combineBitSets(left,rightNew, 28);
             
             //run permutation on the 48 bits and store it as a subkey, where iteration number is the index
             generatedsubKeys[i] = this.permutation(combined, pc2box);
+            
             
     	}
     	return generatedsubKeys;
@@ -390,11 +384,12 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
      */
     private static BitSet leftCircularShift (BitSet bits,  int roundnum) {
     	int shift = numShifts[roundnum];
+    	int j = 0;
 		BitSet temp = bits.get(shift, 28); 
     	for(int i = shift; i>0; i--) {
-        	temp.set(28-i, bits.get(i-1));    		
+        	temp.set(28-i, bits.get(j));
+        	j++;
     	}
-    	
 		return temp;
     }
 
@@ -404,7 +399,9 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
      * @return String array with each entry having 8 characters
      */
     private BitSet[] stringTo64Bits(String inputString) {
-        int length = (int) Math.ceil((double) inputString.length() / 8);
+    	int length = (inputString.length() / 8) ;
+        if(inputString.length()%8 !=0)
+    		length++;
 
         BitSet[] output = new BitSet[length];
         for(int i = 0; i < output.length; i++) {
