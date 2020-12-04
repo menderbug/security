@@ -48,10 +48,10 @@ public class GUI extends Application {
 		//DES Implementation
 		DES des = new DES();
 		TextArea desPlainIn = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
-		TextArea desKeyIn = new TextArea(des.keyToNums());
+		TextArea desKeyIn = new TextArea(des.bitsetToString(des.getKey(),64));
 		TextArea desEncryptIn = new TextArea(des.encrypt(desPlainIn.getText()));
 		TextArea desEncryptOut = new TextArea(desEncryptIn.getText());
-		TextArea desKeyOut = new TextArea(des.keyToNums());
+		TextArea desKeyOut = new TextArea(des.bitsetToString(des.getKey(),64));
 		TextArea desPlainOut = new TextArea(desPlainIn.getText());
 		Button desEncrypt = new Button("Encrypt DES");
 		desEncrypt.setOnAction(event -> desEncryptIn.setText(des.encrypt(desPlainIn.getText())));
