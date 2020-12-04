@@ -1,5 +1,6 @@
 package security;
 
+import java.math.BigInteger;
 import java.util.BitSet;
 
 import javafx.application.Application;
@@ -61,9 +62,19 @@ public class GUI extends Application {
 		
 		new RSA();
 		TextArea rsaInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
-		TextArea rsaKey = new TextArea(RSA.getPublicKey());
 		TextArea rsaOutput = new TextArea(RSA.encrypt(rsaInput.getText()).toString());
 		TextArea rsaDecrypt = new TextArea(RSA.decrypt(RSA.encrypt(rsaInput.getText())));
+		rsaInput.textProperty().addListener((observable, oldValue, newValue) -> {
+			rsaOutput.setText(RSA.encrypt(rsaInput.getText()).toString());
+		});
+		rsaOutput.textProperty().addListener((observable, oldValue, newValue) -> {
+			rsaInput.setText(RSA.decrypt(new BigInteger(rsaOutput.getText())));
+			rsaDecrypt.setText(RSA.decrypt(new BigInteger(rsaOutput.getText())));
+		});
+		rsaDecrypt.textProperty().addListener((observable, oldValue, newValue) -> {
+			rsaOutput.setText(RSA.encrypt(rsaInput.getText()).toString());
+		});
+		
 
 		GridPane vigenerePane = new GridPane();
 		GridPane desPane = new GridPane();
@@ -100,18 +111,15 @@ public class GUI extends Application {
 
 
 		rsaPane.add(new TextField("RSA Encryption"), 0, 0, 3, 1);
-		rsaPane.add(new TextField("Plaintext"), 1, 1);
-		rsaPane.add(new TextField("Encrypted Text"), 2, 1);
+		rsaPane.add(new TextField("Plaintext"), 0, 1);
+		rsaPane.add(new TextField("Encrypted Text"), 1, 1);
+		rsaPane.add(new TextField("Decrypted Text"), 2, 1);
 		
 		rsaPane.add(new TextField(RSA.getPublicKey()), 0, 3, 3, 1);
 		
-		rsaPane.add(new TextField("Encrypted Text"), 1, 4);
-		rsaPane.add(new TextField("Plaintext"), 2, 5);
-
 		rsaPane.add(rsaInput, 0, 2);
-		rsaPane.add(rsaKey, 1, 2);
-		rsaPane.add(rsaOutput, 2, 2);
-		rsaPane.add(rsaDecrypt, 0, 4);
+		rsaPane.add(rsaOutput, 1, 2);
+		rsaPane.add(rsaDecrypt, 2, 2);
 		
 		pane.getTabs().add(new Tab("Vigenere", vigenerePane));
 		pane.getTabs().add(new Tab("DES", desPane));
