@@ -27,6 +27,7 @@ public class GUI extends Application {
 		primaryStage.setScene(primaryScene);
 
 
+		//Vigenere implementation
 		TextArea vigenereInput = new TextArea("it was her habit to build up laughter out of inadequate materials");
 		TextArea vigenereKey = new TextArea("steinbeck");
 		TextArea vigenereOutput = new TextArea(Vigenere.encrypt(vigenereInput.getText(), vigenereKey.getText()));
@@ -45,15 +46,13 @@ public class GUI extends Application {
 		});
 		
 
-		//DES Implementation
+		//DES implementation
 		DES des = new DES();
 		TextArea desPlainIn = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
-		TextArea desKeyIn = new TextArea(des.bitsetToString(des.getKey(),64));
+		TextArea desKeyIn = new TextArea(DES.bitsetToString(des.getKey(),64));
 		TextArea desEncryptIn = new TextArea(des.encrypt(desPlainIn.getText()));
-		//System.out.println(desEncryptIn + "ENCRYPTED TEXT");
-		//TextArea desEncryptIn = new TextArea("nope");	//TODO
 		TextArea desEncryptOut = new TextArea(desEncryptIn.getText());
-		TextArea desKeyOut = new TextArea(des.bitsetToString(des.getKey(),64)); //LOOK HERE
+		TextArea desKeyOut = new TextArea(DES.bitsetToString(des.getKey(),64));
 		TextArea desPlainOut = new TextArea(desPlainIn.getText());
 		Button desEncrypt = new Button("Encrypt DES");
 		desEncrypt.setOnAction(event -> desEncryptIn.setText(des.encrypt(desPlainIn.getText())));
@@ -61,6 +60,7 @@ public class GUI extends Application {
 		desDecrypt.setOnAction(event -> desPlainOut.setText(des.decrypt(desEncryptIn.getText(), desKeyOut.getText())));
 		desKeyIn.setEditable(false);
 		
+		//RSA implementation
 		new RSA();
 		TextArea rsaInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea rsaOutput = new TextArea(RSA.encrypt(rsaInput.getText()).toString());
@@ -76,12 +76,14 @@ public class GUI extends Application {
 			rsaOutput.setText(RSA.encrypt(rsaInput.getText()).toString());
 		});
 		
-
+		
+		//three individual tabs
 		GridPane vigenerePane = new GridPane();
 		GridPane desPane = new GridPane();
 		GridPane rsaPane = new GridPane();
 		
-
+		
+		//adding components to Vigenere pane
 		vigenerePane.add(new TextField("Vigenere Encryption"), 0, 0, 4, 1);
 		vigenerePane.add(new TextField("Plaintext"), 0, 1);
 		vigenerePane.add(new TextField("Key"), 1, 1);
@@ -91,6 +93,7 @@ public class GUI extends Application {
 		vigenerePane.add(vigenereKey, 1, 2);
 		vigenerePane.add(vigenereOutput, 2, 2);
 
+		//adding components to DES pane
 		desPane.add(new TextField("DES Encryption"), 1, 0, 3, 1);
 		desPane.add(new TextField("Plaintext"), 1, 1);
 		desPane.add(new TextField("Key"), 2, 1);
@@ -114,6 +117,7 @@ public class GUI extends Application {
 		desPane.add(desKeyOut, 2, 4);
 		desPane.add(desPlainOut, 3, 4);
 
+		//adding components to RSA pane
 		rsaPane.add(new TextField("RSA Encryption"), 0, 0, 3, 1);
 		rsaPane.add(new TextField("Plaintext"), 0, 1);
 		rsaPane.add(new TextField("Encrypted Text"), 1, 1);
@@ -127,21 +131,21 @@ public class GUI extends Application {
 		rsaPane.add(rsaOutput, 1, 2);
 		rsaPane.add(rsaDecrypt, 2, 2);
 		
+		//adding all three panes into the tab structure
 		pane.getTabs().add(new Tab("Vigenere", vigenerePane));
 		pane.getTabs().add(new Tab("DES", desPane));
 		pane.getTabs().add(new Tab("RSA", rsaPane));
 		
 		desPane.getChildren().forEach(c -> GridPane.setValignment(c, VPos.CENTER));
 		
+		//making text fields uneditable and text areas wrap text
 		pane.getTabs().forEach(t -> {
 			((GridPane) t.getContent()).getChildren().forEach(n -> {if (n instanceof TextField) ((TextField) n).setEditable(false);});
 			((GridPane) t.getContent()).getChildren().forEach(n -> {if (n instanceof TextArea) ((TextArea) n).setWrapText(true);;});
 		});
 
 		primaryStage.setTitle("Encoder/Decoder");
-		//primaryStage.initStyle(StageStyle.UNDECORATED);
 		primaryScene.getStylesheets().add("gui.css");
-		//primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
 		primaryStage.sizeToScene();
 		primaryStage.show();
 
