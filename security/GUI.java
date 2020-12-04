@@ -1,12 +1,9 @@
 package security;
 
 import java.math.BigInteger;
-import java.util.BitSet;
 
 import javafx.application.Application;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -16,12 +13,10 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class GUI extends Application {
 	
-	private RSA rsa = new RSA();
 	private TabPane pane = new TabPane();
 
 	public static void main(String[] args) {launch(args);}
@@ -60,7 +55,7 @@ public class GUI extends Application {
 		TextArea desKeyOut = new TextArea(des.bitsetToString(des.getKey(),64));
 		TextArea desPlainOut = new TextArea(desPlainIn.getText());
 		Button desEncrypt = new Button("Encrypt DES");
-		//desEncrypt.setOnAction(event -> desEncryptIn.setText(des.encrypt(desPlainIn.getText())));
+		desEncrypt.setOnAction(event -> desEncryptIn.setText(des.encrypt(desPlainIn.getText())));
 		Button desDecrypt = new Button("Decrypt DES");
 		desDecrypt.setOnAction(event -> desPlainOut.setText(des.decrypt(desEncryptIn.getText(), desKeyOut.getText())));
 		desKeyIn.setEditable(false);
@@ -145,7 +140,7 @@ public class GUI extends Application {
 		primaryStage.setTitle("Encoder/Decoder");
 		//primaryStage.initStyle(StageStyle.UNDECORATED);
 		primaryScene.getStylesheets().add("gui.css");
-		primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
+		//primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
 		primaryStage.sizeToScene();
 		primaryStage.show();
 
