@@ -1,7 +1,9 @@
 package security;
 
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
@@ -12,14 +14,17 @@ import javafx.stage.Stage;
 
 public class GUI extends Application {
 
+	private DES des;
+	private String desKey;
+	private TextField desKeyText = new TextField();
+	
+	private RSA rsa = new RSA();
 	private TabPane pane = new TabPane();
 
 	public static void main(String[] args) {launch(args);}
 
 	public void start(Stage primaryStage) throws Exception {
 
-		DES des = new DES();
-		RSA rsa = new RSA();
 		Scene primaryScene = new Scene(pane);
 		primaryStage.setScene(primaryScene);
 
@@ -40,12 +45,24 @@ public class GUI extends Application {
 		vigenereOutput.textProperty().addListener((observable, oldValue, newValue) -> {
 			vigenereInput.setText(Vigenere.decrypt(vigenereOutput.getText(), vigenereKey.getText()));
 		});
+		
 
 		//DES Implementation
+		resetDES();
 		TextArea desInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
-		TextArea desKey = new TextArea(des.keyToNums());
-		String encryptedtext  = DES.bitsetToString(des.encrypt(desInput.getText()), (int) (Math.ceil((double) desInput.getText().length() / 8)) * 64);
-		TextArea desEncryptedText = new TextArea(encryptedtext);
+		TextArea desOutput = new TextArea(desEncrypt(desInput.getText()));
+		Button desReset = new Button("Regenerate key");
+		desInput.textProperty().addListener((observable, oldValue, newValue) -> {
+			desOutput.setText(desEncrypt(desInput.getText()));
+		});
+		desOutput.textProperty().addListener((observable, oldValue, newValue) -> {
+			desInput.setText("temp");		//TODO idk how to decrypt with DES
+		});
+		desReset.setOnAction(event -> {
+			resetDES();
+			desOutput.setText(desEncrypt(desInput.getText()));
+		});
+		
 		TextArea rsaInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea rsaKey = new TextArea(RSA.getPublicKey());
 		TextArea rsaOutput = new TextArea(RSA.encrypt(rsaInput.getText()).toString());
@@ -60,23 +77,23 @@ public class GUI extends Application {
 		vigenerePane.add(new TextField("Key"), 1, 1);
 		vigenerePane.add(new TextField("Encrypted Text"), 2, 1);
 
-		desPane.add(new TextField("DES Encryption"), 0, 0, 5, 1);
+		vigenerePane.add(vigenereInput, 0, 2);
+		vigenerePane.add(vigenereKey, 1, 2);
+		vigenerePane.add(vigenereOutput, 2, 2);
+
+		desPane.add(new TextField("DES Encryption"), 0, 0, 2, 1);
 		desPane.add(new TextField("Decrypted Text"), 0, 1);
-		desPane.add(new TextField("Key"), 1, 1);
-		desPane.add(new TextField("Encrypted Text"), 2, 1);
+		desPane.add(new TextField("Encrypted Text"), 1, 1);
+		desPane.add(desKeyText, 0, 3, 2, 1);
+		desPane.add(desReset, 0, 4, 2, 1);
+		
+		desPane.add(desInput, 0, 2);
+		desPane.add(desOutput, 1, 2);
 
 		rsaPane.add(new TextField("RSA Encryption"), 0, 0, 3, 1);
 		rsaPane.add(new TextField("Text"), 0, 1);
 		rsaPane.add(new TextField("Key"), 1, 1);
 		rsaPane.add(new TextField("Encrypted Text"), 2, 1);
-
-		vigenerePane.add(vigenereInput, 0, 2);
-		vigenerePane.add(vigenereKey, 1, 2);
-		vigenerePane.add(vigenereOutput, 2, 2);
-
-		desPane.add(desInput, 0, 2);
-		desPane.add(desKey, 1, 2);
-		desPane.add(desEncryptedText, 2, 2);
 
 		rsaPane.add(rsaInput, 0, 2);
 		rsaPane.add(rsaKey, 1, 2);
@@ -93,12 +110,22 @@ public class GUI extends Application {
 
 		primaryStage.setTitle("Encoder/Decoder");
 		//primaryStage.initStyle(StageStyle.UNDECORATED);
-		primaryScene.getStylesheets().add("gui.css");
+		//primaryScene.getStylesheets().add("gui.css");
 		primaryStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
 		primaryStage.sizeToScene();
 		primaryStage.show();
 
 
+	}
+	
+	private void resetDES() {
+		des = new DES();
+		desKey = des.keyToNums();
+		desKeyText.setText("Key: " + desKey);
+	}
+
+	private String desEncrypt(String str) {
+		return DES.bitsetToString(des.encrypt(str), (int) (Math.ceil((double) str.length() / 8)) * 64);
 	}
 
 
