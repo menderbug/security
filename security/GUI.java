@@ -53,6 +53,7 @@ public class GUI extends Application {
 		TextArea rsaInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea rsaKey = new TextArea(RSA.getPublicKey());
 		TextArea rsaOutput = new TextArea(RSA.encrypt(rsaInput.getText()).toString());
+		TextArea rsaDecrypt = new TextArea(RSA.decrypt(RSA.encrypt(rsaInput.getText())));
 
 		GridPane vigenerePane = new GridPane();
 		GridPane desPane = new GridPane();
@@ -74,6 +75,7 @@ public class GUI extends Application {
 		rsaPane.add(new TextField("Text"), 0, 1);
 		rsaPane.add(new TextField("Key"), 1, 1);
 		rsaPane.add(new TextField("Encrypted Text"), 2, 1);
+		rsaPane.add(new TextField("Decrypted Text"), 0, 3);
 
 		vigenerePane.add(vigenereInput, 0, 2);
 		vigenerePane.add(vigenereKey, 1, 2);
@@ -87,6 +89,7 @@ public class GUI extends Application {
 		rsaPane.add(rsaInput, 0, 2);
 		rsaPane.add(rsaKey, 1, 2);
 		rsaPane.add(rsaOutput, 2, 2);
+		rsaPane.add(rsaDecrypt, 0, 4);
 		
 		pane.getTabs().add(new Tab("Vigenere", vigenerePane));
 		pane.getTabs().add(new Tab("DES", desPane));
