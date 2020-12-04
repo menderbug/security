@@ -118,9 +118,7 @@ private static final int[] pc2box = {14, 17, 11, 24, 1,  5,
 
     public DES(BitSet bitKey) {
         this.key = bitKey;
-        System.out.println(this.key + " ENCRYPT KEY");
         this.subKeys = generateSubkeys(this.key);
-        System.out.println(this.subKeys[1] + " ENCRYPT SUBKEYS");
     }
 
     public String encrypt(String encryptText) {
@@ -155,9 +153,7 @@ private static final int[] pc2box = {14, 17, 11, 24, 1,  5,
     public String decrypt(String decryptText, String userkey) {
     	BitSet inputkey = stringToBitSet(userkey);
     	this.key = inputkey;
-    	System.out.println(this.key + " DECRYPT BITSET");
     	this.subKeys = generateSubkeys(this.key);
-    	System.out.println(this.subKeys[1] + " DECRYPT SUBKEYS");
     	
     	int length = (decryptText.length()/64);
     	if(decryptText.length()%64 !=0)
@@ -212,7 +208,6 @@ private static final int[] pc2box = {14, 17, 11, 24, 1,  5,
                 key.set(i);
             }
         }
-        System.out.println(key + " KEY");
         return key;
     }
 
@@ -466,7 +461,6 @@ private static final int[] pc2box = {14, 17, 11, 24, 1,  5,
     }
 
     public BitSet getKey() {
-    	System.out.println(this.key + " THIS KEY");
     	return this.key;
     }
 }
