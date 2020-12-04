@@ -1,5 +1,7 @@
 package security;
 
+import java.util.BitSet;
+
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -13,10 +15,6 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class GUI extends Application {
-
-	private DES des;
-	private String desKey;
-	private TextField desKeyText = new TextField();
 	
 	private RSA rsa = new RSA();
 	private TabPane pane = new TabPane();
@@ -48,24 +46,24 @@ public class GUI extends Application {
 		
 
 		//DES Implementation
-		resetDES();
-		TextArea desInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
-		TextArea desOutput = new TextArea(desEncrypt(desInput.getText()));
-		Button desReset = new Button("Regenerate key");
-		desInput.textProperty().addListener((observable, oldValue, newValue) -> {
-			desOutput.setText(desEncrypt(desInput.getText()));
-		});
-		desOutput.textProperty().addListener((observable, oldValue, newValue) -> {
-			desInput.setText("temp");		//TODO idk how to decrypt with DES
-		});
-		desReset.setOnAction(event -> {
-			resetDES();
-			desOutput.setText(desEncrypt(desInput.getText()));
-		});
+		DES des = new DES();
+		TextArea desPlainIn = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
+		TextArea desKeyIn = new TextArea(des.keyToNums());
+		TextArea desEncryptIn = new TextArea(des.encrypt(desPlainIn.getText()));
+		TextArea desEncryptOut = new TextArea(desEncryptIn.getText());
+		TextArea desKeyOut = new TextArea(des.keyToNums());
+		TextArea desPlainOut = new TextArea(desPlainIn.getText());
+		Button desEncrypt = new Button("Encrypt DES");
+		desEncrypt.setOnAction(event -> desEncryptIn.setText(des.encrypt(desPlainIn.getText())));
+		Button desDecrypt = new Button("Decrypt DES");
+		desDecrypt.setOnAction(event -> desPlainOut.setText(des.decrypt(desEncrypt.getText(), desKeyOut.getText())));
+		desKeyIn.setEditable(false);
 		
+		new RSA();
 		TextArea rsaInput = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea rsaKey = new TextArea(RSA.getPublicKey());
 		TextArea rsaOutput = new TextArea(RSA.encrypt(rsaInput.getText()).toString());
+		TextArea rsaDecrypt = new TextArea(RSA.decrypt(RSA.encrypt(rsaInput.getText())));
 
 		GridPane vigenerePane = new GridPane();
 		GridPane desPane = new GridPane();
@@ -73,7 +71,7 @@ public class GUI extends Application {
 		
 
 		vigenerePane.add(new TextField("Vigenere Encryption"), 0, 0, 4, 1);
-		vigenerePane.add(new TextField("Text"), 0, 1);
+		vigenerePane.add(new TextField("Plaintext"), 0, 1);
 		vigenerePane.add(new TextField("Key"), 1, 1);
 		vigenerePane.add(new TextField("Encrypted Text"), 2, 1);
 
@@ -81,23 +79,39 @@ public class GUI extends Application {
 		vigenerePane.add(vigenereKey, 1, 2);
 		vigenerePane.add(vigenereOutput, 2, 2);
 
-		desPane.add(new TextField("DES Encryption"), 0, 0, 2, 1);
-		desPane.add(new TextField("Decrypted Text"), 0, 1);
-		desPane.add(new TextField("Encrypted Text"), 1, 1);
-		desPane.add(desKeyText, 0, 3, 2, 1);
-		desPane.add(desReset, 0, 4, 2, 1);
+		desPane.add(new TextField("DES Encryption"), 0, 0, 4, 1);
+		desPane.add(new TextField("Plaintext"), 1, 1);
+		desPane.add(new TextField("Key"), 2, 1);
+		desPane.add(new TextField("Encrypted Text"), 3, 1);
 		
-		desPane.add(desInput, 0, 2);
-		desPane.add(desOutput, 1, 2);
+		desPane.add(desEncrypt, 0, 2);
+		desPane.add(desPlainIn, 1, 2);
+		desPane.add(desKeyIn, 2, 2);
+		desPane.add(desEncryptIn, 3, 2);
+		
+		desPane.add(new TextField("Encrypted Text"), 1, 3);
+		desPane.add(new TextField("Key"), 2, 3);
+		desPane.add(new TextField("Plaintext"), 3, 3);
+		
+		desPane.add(desDecrypt, 0, 4);
+		desPane.add(desEncryptOut, 1, 4);
+		desPane.add(desKeyOut, 2, 4);
+		desPane.add(desPlainOut, 3, 4);
+
 
 		rsaPane.add(new TextField("RSA Encryption"), 0, 0, 3, 1);
-		rsaPane.add(new TextField("Text"), 0, 1);
-		rsaPane.add(new TextField("Key"), 1, 1);
+		rsaPane.add(new TextField("Plaintext"), 1, 1);
 		rsaPane.add(new TextField("Encrypted Text"), 2, 1);
+		
+		rsaPane.add(new TextField(RSA.getPublicKey()), 0, 3, 3, 1);
+		
+		rsaPane.add(new TextField("Encrypted Text"), 1, 4);
+		rsaPane.add(new TextField("Plaintext"), 2, 5);
 
 		rsaPane.add(rsaInput, 0, 2);
 		rsaPane.add(rsaKey, 1, 2);
 		rsaPane.add(rsaOutput, 2, 2);
+		rsaPane.add(rsaDecrypt, 0, 4);
 		
 		pane.getTabs().add(new Tab("Vigenere", vigenerePane));
 		pane.getTabs().add(new Tab("DES", desPane));
@@ -117,16 +131,8 @@ public class GUI extends Application {
 
 
 	}
-	
-	private void resetDES() {
-		des = new DES();
-		desKey = des.keyToNums();
-		desKeyText.setText("Key: " + desKey);
-	}
 
-	private String desEncrypt(String str) {
-		return DES.bitsetToString(des.encrypt(str), (int) (Math.ceil((double) str.length() / 8)) * 64);
-	}
+
 
 
 }

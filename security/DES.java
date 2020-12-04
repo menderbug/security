@@ -118,13 +118,14 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
     public static void main(String[] args) {
 
         DES des = new DES();
-        BitSet bits = des.encrypt("Helloworld");
-        System.out.println(bitsetToString(bits, (int) (Math.ceil((double) "Helloworld".length() / 8)) * 64));
+        //BitSet bits = des.encrypt("Helloworld");
+        //System.out.println(bitsetToString(bits, (int) (Math.ceil((double) "Helloworld".length() / 8)) * 64));
 
     }
 
-    public BitSet encrypt(String encryptText) {
+    public String encrypt(String encryptText) {
         BitSet[] blockStrings = this.stringTo64Bits(encryptText);
+        String encryptedString = "";
 
         //runs through each set of 64 bits in BlockString
         BitSet encryptedBits = new BitSet();
@@ -138,9 +139,10 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
              }
             currentBits = permutation(currentBits, inverseipbox); //inverse permutation
             encryptedBits = this.combineBitSets(encryptedBits, currentBits, index * 64);
+            encryptedString += bitsetToString(currentBits, 64);
         }
 
-        return encryptedBits;
+        return encryptedString;
     }
 
     /**
@@ -151,6 +153,9 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
      */
 
     public String decrypt(String decryptText, String userKey) {
+    	
+    	this.subKeys = generateSubkeys(stringToBitSet(userKey));
+
         BitSet[] blockStrings;
         if(this.isBinary(decryptText)) {
             blockStrings = this.bitSetToArray(stringToBitSet(decryptText));
