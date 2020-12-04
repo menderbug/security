@@ -1,11 +1,12 @@
 .text-input {
+	-fx-alignment: center;
 	-fx-font-size: 20;
-	-fx-font-family: 'Georgia';
+	-fx-font-family: 'Montserrat';
     -fx-text-fill: black;
-    -fx-highlight-fill: burlywood;
+    -fx-highlight-fill: lightgrey;
     -fx-highlight-text-fill: black;
-	-fx-control-inner-background: cornsilk;
-    -fx-text-box-border: burlywood;
+	-fx-control-inner-background: white;
+    -fx-text-box-border: white;
   	-fx-focus-color: black;
   	-fx-background-radius: 0;
 }
@@ -19,13 +20,21 @@
     -fx-opacity: 0;
 }
 
+.tab-pane {
+    -fx-background-color: white;
+}
+
+.tab-pane .tab-header-background {
+	-fx-background-color: white;
+}
+
 .tab-pane .tab {
-    -fx-background-color: cornsilk;
+    -fx-background-color: white;
 
 }
 
 .tab-pane .tab:selected {
-    -fx-background-color: burlywood;
+    -fx-background-color: lightgrey;
 }
 
 .tab-pane:top *.tab-header-area {
