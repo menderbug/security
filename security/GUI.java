@@ -55,12 +55,13 @@ public class GUI extends Application {
 		TextArea desPlainIn = new TextArea("all the girls with heads inside a dream so now we live beside the pool where everything is good");
 		TextArea desKeyIn = new TextArea(des.bitsetToString(des.getKey(),64));
 		TextArea desEncryptIn = new TextArea(des.encrypt(desPlainIn.getText()));
+		//System.out.println(desEncryptIn + "ENCRYPTED TEXT");
 		//TextArea desEncryptIn = new TextArea("nope");	//TODO
 		TextArea desEncryptOut = new TextArea(desEncryptIn.getText());
-		TextArea desKeyOut = new TextArea(des.bitsetToString(des.getKey(),64));
+		TextArea desKeyOut = new TextArea(des.bitsetToString(des.getKey(),64)); //LOOK HERE
 		TextArea desPlainOut = new TextArea(desPlainIn.getText());
 		Button desEncrypt = new Button("Encrypt DES");
-		//desEncrypt.setOnAction(event -> desEncryptIn.setText(des.encrypt(desPlainIn.getText())));
+		desEncrypt.setOnAction(event -> desEncryptIn.setText(des.encrypt(desPlainIn.getText())));
 		Button desDecrypt = new Button("Decrypt DES");
 		desDecrypt.setOnAction(event -> desPlainOut.setText(des.decrypt(desEncryptIn.getText(), desKeyOut.getText())));
 		desKeyIn.setEditable(false);
