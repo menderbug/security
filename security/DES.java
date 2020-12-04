@@ -1,5 +1,6 @@
 package security;
 
+import java.math.BigInteger;
 import java.util.BitSet;
 
 public class DES {
@@ -113,12 +114,13 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
 
     public DES(BitSet bitKey) {
         this.key = bitKey;
+        System.out.println(bitsetToString(key, 64) + " KEY");
         this.subKeys = generateSubkeys(this.key);
     }
 
-    public BitSet encrypt(String encryptText) {
+    public String encrypt(String encryptText) {
         BitSet[] blockStrings = this.stringTo64Bits(encryptText);
-
+        String encryptedString = "";
         //runs through each set of 64 bits in BlockString
         BitSet encryptedBits = new BitSet();
         for(int index = 0; index<blockStrings.length; index++) {
@@ -140,9 +142,12 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
             //inversebox 
             currentBits = permutation(currentBits, inverseipbox); //inverse permutation
             encryptedBits = this.combineBitSets(encryptedBits, currentBits, index * 64);
+            encryptedString += bitsetToString(currentBits, 64);
+            
+            
         }
 
-        return encryptedBits;
+        return encryptedString;
     }
 
     /**
@@ -181,6 +186,9 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
      * @return decrypted text
      */
     public String decrypt(String decryptText, String userkey) { // BitSet[] blockStrings, BitSet userKey
+    	BitSet inputkey = stringToBitSet(userkey);
+    	this.subKeys = generateSubkeys(inputkey);
+    	
     	int length = (decryptText.length()/64);
     	if(decryptText.length()%64 !=0)
     		length++;
@@ -262,7 +270,6 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
 
         return finalValue;
     }
-
 
     private BitSet reverseRound(BitSet bits, int iteration) {
         //The first 32-bits of an output block are right-most 32 bits of the original input block
@@ -555,5 +562,7 @@ private static final int[] pc2box = {14, 17, 11, 24, 1, 5,
         }
         return true;
     }
-
+    public BitSet getKey() {
+    	return key;
+    }
 }
