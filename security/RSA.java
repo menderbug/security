@@ -10,9 +10,10 @@ import java.io.IOException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-
+import java.util.stream.Stream;
 //For image display purposes
 import java.awt.Container;
 import java.awt.EventQueue;
@@ -34,7 +35,7 @@ public class RSA {
 	private static BigInteger phi;
 	private static BigInteger e; // public key exponent
 	private static BigInteger privateKey;
-	private final int keyLength = 512;
+	private final int keyLength = 2048;
 	private static Random random;
 
 
@@ -82,7 +83,12 @@ public class RSA {
 		//Testing string encryption/decryption
 		//Uses encrypt and decrypt methods
 		//Note: I also tested encryption on a text file with the encrypt method and it worked just fine
-		String plainText = "all the girls with heads inside a dream so now we live beside the pool where everything is good";
+		
+        //String plainText = "all the girls with heads inside a dream so now we live beside the pool where everything is good";
+        
+        
+        /*String plainText = "once upon a midnight dreary while i pondered weak and weary over many a quaint and curious volume of forgotten lore while i nodded nearly napping suddenly i heard a tapping as of someone gently rapping rapping at my chamber door tis some visitor i muttered";       		
+        
 		BigInteger encrypt = encrypt(plainText);
 		String decrypt = decrypt(encrypt);
 		System.out.println("original message in plaintext: " + plainText);
@@ -91,7 +97,64 @@ public class RSA {
 
 
 		System.out.println("encrypted message: " + encrypt);
-		System.out.println("decrypted message in plaintext: "+ decrypt);
+		System.out.println("decrypted message in plaintext: "+ decrypt);*/
+        byte[] b1 = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 5};
+        byte[] b2 = {-1, 5};
+        System.out.println(new BigInteger(b1));
+        System.out.println(new BigInteger(b2));
+        System.out.println(encryptBigInteger(new BigInteger(b1)));
+        System.out.println(encryptBigInteger(new BigInteger(b2)));
+        System.out.println(Arrays.toString(new BigInteger("-251").toByteArray()));
+        //System.out.println(Arrays.toString(decryptBigInteger(encryptBigInteger(bi)).toByteArray()));
+		
+        /*try {
+			FileInputStream encryptIn =  new FileInputStream("in.jpg");
+			FileOutputStream encryptOut = new FileOutputStream("code.jpg");
+			byte[] buffer = new byte[255];
+			int readBytes;
+			
+			while ((readBytes = encryptIn.read(buffer)) != -1) {
+				System.out.println(Arrays.toString(buffer));
+				System.out.println(Arrays.toString(encryptBigInteger(new BigInteger(buffer)).toByteArray()));
+				encryptOut.write(encryptBigInteger(new BigInteger(buffer)).toByteArray());
+				System.out.println();
+			}
+			
+			System.out.println("now for the decryption \n");
+			
+			FileInputStream decryptIn =  new FileInputStream("code.jpg");
+			FileOutputStream decryptOut = new FileOutputStream("out.jpg");
+
+			byte[] decryptBuffer = new byte[256];
+			while ((readBytes = decryptIn.read(decryptBuffer)) != -1) {
+				System.out.println(Arrays.toString(decryptBigInteger(new BigInteger(decryptBuffer)).toByteArray()));
+				System.out.println(Arrays.toString(decryptBuffer));
+				decryptOut.write(decryptBigInteger(new BigInteger(decryptBuffer)).toByteArray());
+				System.out.println();
+			}
+
+			byte[] b1 = new byte[255];
+			byte[] b2 = new byte[255];
+			
+			System.out.println("\n\n");
+			
+			FileInputStream inAgain = new FileInputStream("in.jpg");
+			FileInputStream outAgain = new FileInputStream("out.jpg");
+			while (inAgain.read(b1) != -1) {
+				outAgain.read(b2);
+				System.out.println(Arrays.toString(b1));
+				System.out.println(Arrays.toString(b2));
+				System.out.println(Arrays.equals(b1, b2));
+			}
+			
+			encryptIn.close();
+			encryptOut.close();
+			decryptIn.close();
+			decryptOut.close();
+			
+		} catch (IOException ioe) {
+        	System.out.println("Error: " + ioe.getMessage());
+        }*/
 		
 		/*
 		//Third attempt for image encryption
@@ -126,6 +189,10 @@ public class RSA {
 		
 		/*First attempt for image encryption starts here
 		//File i/o for the duck and the encrypted image*/
+		
+		//this is david im gonna comment this all out for now
+		/*
+		
 		FileInputStream originalImage =  new FileInputStream("happyduck.jpg");
 		FileOutputStream encryptedImageFile = new FileOutputStream("encryptedhappyduck.jpg");
 		byte[] buffer = new byte[256];
@@ -149,7 +216,7 @@ public class RSA {
 
 		originalImage.close();
 		encryptedImageFile.close();
-
+		*/
 
 		/* Commented out until RSA is actually fixed
 		//Decrypt the file
@@ -238,9 +305,11 @@ public class RSA {
 		return messageBytes.modPow(e,modulus);
 	}
 
-	public static BigInteger encryptBigInteger(BigInteger b) {
-		return b.modPow(e, modulus);
+	public static BigInteger encryptBigInteger(BigInteger b) {		//edited for  the image thing
+		return b.compareTo(BigInteger.ZERO) < 0 ? b.negate().modPow(e, modulus).negate() : b.modPow(e, modulus);
 	}
+	
+	/*
 	//Second attempt at encrypting image
 	public static byte[] encryptImage(byte[] image){
 		byte [] encryptedImage = new byte[image.length];
@@ -261,20 +330,20 @@ public class RSA {
 	public static byte[] encryptImage2(byte[] image){
 		BigInteger imageBigInt = new BigInteger(image);
 		return (imageBigInt.modPow(e,modulus)).toByteArray();
-	}
+	}*/
 
 
 
 
-	//Decryption method for Strings
+	//Decryption method for Strings		
 	public static String decrypt(BigInteger message){
 		BigInteger decrypt = message.modPow(privateKey,modulus);
 		return new String (decrypt.toByteArray());
 
 	}
 
-	public static BigInteger decryptBigInteger(BigInteger b) {
-		return b.modPow(privateKey,modulus);
+	public static BigInteger decryptBigInteger(BigInteger b) {	//edited for the image thing
+		return b.compareTo(BigInteger.ZERO) < 0 ? b.negate().modPow(privateKey, modulus).negate() : b.modPow(privateKey,modulus);
 	}
 
 	//Returns the bytes of image input
