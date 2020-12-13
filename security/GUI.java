@@ -32,10 +32,6 @@ public class GUI extends Application {
 		TextArea vigenereKey = new TextArea("steinbeck");
 		TextArea vigenereOutput = new TextArea(Vigenere.encrypt(vigenereInput.getText(), vigenereKey.getText()));
 		vigenereInput.textProperty().addListener((observable, oldValue, newValue) -> {
-			if (vigenereInput.getText().equals("hackerman")) {
-				primaryScene.getStylesheets().add("matrix.css");
-				primaryStage.sizeToScene();
-			}
 			vigenereOutput.setText(Vigenere.encrypt(vigenereInput.getText(), vigenereKey.getText()));
 		});
 		vigenereKey.textProperty().addListener((observable, oldValue, newValue) -> {
